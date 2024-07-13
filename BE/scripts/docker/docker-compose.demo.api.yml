@@ -1,0 +1,27 @@
+version: '3.4'
+
+services:
+  shop.api:
+    user: root
+    build:
+      context: ../../src/server
+      dockerfile: src/Shop.WebApi/Dockerfile
+    container_name: demo-shop-api
+    ports:
+      - "9101:8080"
+    restart: always
+    networks:
+      - demo-shop-net
+    volumes:
+      - /home/demo-shop/shop-api/user-content:/app/wwwroot/user-content/
+      - /home/demo-shop/shop-api/logs:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+    command: >
+      sh -c "chown -R www-data:www-data /app/wwwroot/user-content && 
+             chmod -R 755 /app/wwwroot/user-content && 
+             chown -R www-data:www-data /app/logs && 
+             chmod -R 755 /app/logs"
+
+networks:
+  demo-shop-net:
+    external: true
