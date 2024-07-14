@@ -5,18 +5,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Shop.Infrastructure.Modules;
 using Shop.Module.Core.Services;
 
-namespace Shop.Module.EmailSenderSmtp
+namespace Shop.Module.EmailSenderSmtp;
+
+public class ModuleInitializer : IModuleInitializer
 {
-    public class ModuleInitializer : IModuleInitializer
+    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddScoped<IEmailSender, EmailSender>();
-        }
+        services.AddScoped<IEmailSender, EmailSender>();
+    }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-
-        }
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
     }
 }

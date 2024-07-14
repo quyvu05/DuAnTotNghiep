@@ -14,3 +14,9 @@ namespace Shop.Module.Core.ViewModels
         public bool RememberMe { get; set; }
     }
 }
+public class LoginEmailGetCaptchaParam
+{
+    [Required]
+    [EmailAddress(ErrorMessage = "Invalid email address")]
+    public string Email { get; set; }
+}

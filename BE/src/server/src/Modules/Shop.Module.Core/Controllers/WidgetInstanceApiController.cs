@@ -8,79 +8,79 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Shop.Module.Core.Controllers
+namespace Shop.Module.Core.Controllers;
+
+/// <summary>
+/// Widget instance API controller, providing interface operations related to widget instances
+/// </summary>
+[Authorize(Roles = "admin")]
+[Route("api/widget-instances")]
+public class WidgetInstanceApiController : ControllerBase
 {
-    /// <summary>
-    /// 小部件实例 API 控制器，提供部件实例相关的接口操作。
-    /// </summary>
-    [Authorize(Roles = "admin")]
-    [Route("api/widget-instances")]
-    public class WidgetInstanceApiController : ControllerBase
+    private readonly IRepository<WidgetInstance> _widgetInstanceRepository;
+    private readonly IRepository<Widget> _widgetRespository;
+
+    public WidgetInstanceApiController(
+        IRepository<WidgetInstance> widgetInstanceRepository,
+        IRepository<Widget> widgetRespository)
     {
-        private readonly IRepository<WidgetInstance> _widgetInstanceRepository;
-        private readonly IRepository<Widget> _widgetRespository;
+        _widgetInstanceRepository = widgetInstanceRepository;
+        _widgetRespository = widgetRespository;
+    }
 
-        public WidgetInstanceApiController(
-            IRepository<WidgetInstance> widgetInstanceRepository,
-            IRepository<Widget> widgetRespository)
-        {
-            _widgetInstanceRepository = widgetInstanceRepository;
-            _widgetRespository = widgetRespository;
-        }
-
-        /// <summary>
-        /// 获取所有部件实例。
-        /// </summary>
-        /// <returns>所有部件实例的信息。</returns>
-        [HttpGet]
-        public async Task<Result> Get()
-        {
-            var widgetInstances = await _widgetInstanceRepository.Query()
-                .Select(x => new
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    WidgetType = x.Widget.Name,
-                    x.WidgetZoneId,
-                    x.WidgetId,
-                    WidgetZone = x.WidgetZone.Name,
-                    CreatedOn = x.CreatedOn,
-                    EditUrl = x.Widget.EditUrl,
-                    PublishStart = x.PublishStart,
-                    PublishEnd = x.PublishEnd,
-                    DisplayOrder = x.DisplayOrder,
-                }).ToListAsync();
-
-            return Result.Ok(widgetInstances.OrderBy(c => c.WidgetZoneId).ThenBy(c => c.DisplayOrder));
-        }
-
-        /// <summary>
-        /// 根据部件实例ID删除部件实例。
-        /// </summary>
-        /// <param name="id">部件实例ID。</param>
-        /// <returns>操作结果。</returns>
-        [HttpDelete("{id:int:min(1)}")]
-        public async Task<Result> Delete(int id)
-        {
-            var widgetInstance = await _widgetInstanceRepository.Query().FirstOrDefaultAsync(x => x.Id == id);
-            if (widgetInstance != null)
+    /// <summary>
+    /// Retrieve all widget instances
+    /// </summary>
+    /// <returns>All widget instances information </returns>
+    [HttpGet]
+    public async Task<Result> Get()
+    {
+        var widgetInstances = await _widgetInstanceRepository.Query()
+            .Select(x => new
             {
-                widgetInstance.IsDeleted = true;
-                widgetInstance.UpdatedOn = DateTime.Now;
-                _widgetInstanceRepository.SaveChanges();
-            }
-            return Result.Ok();
+                Id = x.Id,
+                Name = x.Name,
+                WidgetType = x.Widget.Name,
+                x.WidgetZoneId,
+                x.WidgetId,
+                WidgetZone = x.WidgetZone.Name,
+                CreatedOn = x.CreatedOn,
+                EditUrl = x.Widget.EditUrl,
+                PublishStart = x.PublishStart,
+                PublishEnd = x.PublishEnd,
+                DisplayOrder = x.DisplayOrder
+            }).ToListAsync();
+
+        return Result.Ok(widgetInstances.OrderBy(c => c.WidgetZoneId).ThenBy(c => c.DisplayOrder));
+    }
+
+    /// <summary>
+    /// Delete widget instance based on widget instance ID
+    /// </summary>
+    /// <param name="id">widget instance ID </param>
+    /// <returns>Operation result </returns>
+    [HttpDelete("{id:int:min(1)}")]
+    public async Task<Result> Delete(int id)
+    {
+        var widgetInstance = await _widgetInstanceRepository.Query().FirstOrDefaultAsync(x => x.Id == id);
+        if (widgetInstance != null)
+        {
+            widgetInstance.IsDeleted = true;
+            widgetInstance.UpdatedOn = DateTime.Now;
+            _widgetInstanceRepository.SaveChanges();
         }
 
-        /// <summary>
-        /// 获取部件实例数量。
-        /// </summary>
-        /// <returns>部件实例的数量。</returns>
-        [HttpGet("number-of-widgets")]
-        public async Task<Result> GetNumberOfWidgets()
-        {
-            var total = await _widgetInstanceRepository.Query().CountAsync();
-            return Result.Ok(total);
-        }
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Retrieve the number of widget instances
+    /// </summary>
+    /// <returns>Number of widget instances </returns>
+    [HttpGet("number-of-widgets")]
+    public async Task<Result> GetNumberOfWidgets()
+    {
+        var total = await _widgetInstanceRepository.Query().CountAsync();
+        return Result.Ok(total);
     }
 }

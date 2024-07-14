@@ -258,7 +258,7 @@ namespace Shop.WebApi.Extensions
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             // 需要根据实际使用的 MySQL 版本进行调整
-            var serverVersion = new MySqlServerVersion(new Version(5, 7, 34));
+            var serverVersion = new MySqlServerVersion(new Version(5, 7));
 
             options.UseMySql(connectionString, serverVersion, b => b.MigrationsAssembly("Shop.WebApi"));
         }
