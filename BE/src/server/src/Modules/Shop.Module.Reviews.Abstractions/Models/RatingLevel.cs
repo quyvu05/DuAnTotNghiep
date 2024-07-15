@@ -4,11 +4,11 @@ namespace Shop.Module.Reviews.Models
 {
     public enum RatingLevel
     {
-        [Description("差评")]
+        [Description("Bad")]
         Bad = 1,
-        [Description("中评")]
+        [Description("Medium")]
         Medium = 3,
-        [Description("好评")]
+        [Description("Positive")]
         Positive = 5
     }
 }

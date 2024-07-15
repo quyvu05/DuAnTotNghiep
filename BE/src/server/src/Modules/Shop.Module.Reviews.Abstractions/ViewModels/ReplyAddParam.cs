@@ -6,9 +6,7 @@ namespace Shop.Module.Reviews.ViewModels
     {
         public int ReviewId { get; set; }
 
-        /// <summary>
-        /// 回复回复
-        /// </summary>
+  
         public int? ToReplyId { get; set; }
 
         [Required]

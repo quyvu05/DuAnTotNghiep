@@ -4,19 +4,19 @@ namespace Shop.Module.Feedbacks.Models
 {
     public enum FeedbackType
     {
-        [Description("商品相关")]
+        [Description("Product-related")]
         Product = 0,
-        [Description("物流相关")]
+        [Description("Logistics-related")]
         Logistics = 1,
-        [Description("客户服务")]
+        [Description("Customer service")]
         Customer = 2,
-        [Description("优惠活动")]
+        [Description("Promotional activities")]
         Discounts = 3,
-        [Description("功能异常")]
+        [Description("Functional anomaly")]
         Dysfunction = 4,
-        [Description("产品建议")]
+        [Description("Product Proposal")]
         ProductProposal = 5,
-        [Description("其他")]
+        [Description("Other")]
         Other = 6
     }
 }

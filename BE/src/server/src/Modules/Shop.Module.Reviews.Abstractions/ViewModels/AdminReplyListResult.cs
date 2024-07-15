@@ -15,9 +15,6 @@ namespace Shop.Module.Reviews.ViewModels
 
         public DateTime CreatedOn { get; set; }
 
-        /// <summary>
-        /// 当前用户回复的用户
-        /// </summary>
         public string ToUserName { get; set; }
 
         public int? ParentId { get; set; }
@@ -26,9 +23,7 @@ namespace Shop.Module.Reviews.ViewModels
 
         public int UserId { get; set; }
 
-        /// <summary>
-        /// 当前用户回复的用户
-        /// </summary>
+
         public int? ToUserId { get; set; }
 
         public ReplyStatus Status { get; set; }

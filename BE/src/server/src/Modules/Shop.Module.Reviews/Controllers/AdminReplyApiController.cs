@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Shop.Infrastructure;
 using Shop.Infrastructure.Data;
 using Shop.Infrastructure.Web.StandardTable;
@@ -8,6 +9,7 @@ using Shop.Module.MQ;
 using Shop.Module.Reviews.Entities;
 using Shop.Module.Reviews.Services;
 using Shop.Module.Reviews.ViewModels;
+using System.Security.Policy;
 
 namespace Shop.Module.Reviews.Controllers
 {
@@ -38,11 +40,7 @@ namespace Shop.Module.Reviews.Controllers
             _mqService = mqService;
         }
 
-        /// <summary>
-        /// 分页获取管理员回复列表。
-        /// </summary>
-        /// <param name="param">分页和筛选参数。</param>
-        /// <returns>管理员回复的分页列表。</returns>
+
         [HttpPost("grid")]
         public async Task<Result<StandardTableResult<AdminReplyListResult>>> Grid([FromBody] StandardTableParam<AdminReplyQueryParam> param)
         {
@@ -80,12 +78,7 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 更新指定 ID 的管理员回复的状态。
-        /// </summary>
-        /// <param name="id">管理员回复 ID。</param>
-        /// <param name="param">回复更新参数。</param>
-        /// <returns>更新操作的结果。</returns>
+
         [HttpPut("{id}")]
         public async Task<Result> Put(int id, [FromBody] AdminReplyUpdateParam param)
         {
@@ -100,11 +93,7 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 删除指定 ID 的管理员回复。
-        /// </summary>
-        /// <param name="id">管理员回复 ID。</param>
-        /// <returns>删除操作的结果。</returns>
+   
         [HttpDelete("{id}")]
         public async Task<Result> Delete(int id)
         {
@@ -115,7 +104,7 @@ namespace Shop.Module.Reviews.Controllers
                 var any = _replyRepository.Query().Any(c => c.ParentId == model.Id);
                 if (any)
                 {
-                    throw new Exception("当前回复下存在子回复，不允许删除");
+                    throw new Exception("The current reply has a sub reply, deletion is not allowed");
                 }
 
                 model.IsDeleted = true;

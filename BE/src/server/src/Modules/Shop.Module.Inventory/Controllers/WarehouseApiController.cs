@@ -13,9 +13,7 @@ using Shop.Module.Inventory.ViewModels;
 
 namespace Shop.Module.Inventory.Areas.Inventory.Controllers
 {
-    /// <summary>
-    /// 仓库管理API控制器，提供仓库的增删改查等功能
-    /// </summary>
+
     [Authorize(Roles = "admin")]
     [Route("api/warehouses")]
     public class WarehouseApiController : ControllerBase
@@ -41,10 +39,7 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
         }
 
 
-        /// <summary>
-        /// 获取所有仓库的简要信息
-        /// </summary>
-        /// <returns>返回操作结果，包含仓库的简要信息列表</returns>
+
         [HttpGet]
         public async Task<Result> Get()
         {
@@ -58,11 +53,7 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
             return Result.Ok(warehouses);
         }
 
-        /// <summary>
-        /// 根据分页参数获取仓库数据列表
-        /// </summary>
-        /// <param name="param">标准表格参数，包含分页、排序等信息</param>
-        /// <returns>返回操作结果，包含分页的仓库数据列表</returns>
+
         [HttpPost("grid")]
         public async Task<Result<StandardTableResult<WarehouseQueryResult>>> DataList([FromBody] StandardTableParam param)
         {
@@ -86,18 +77,13 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 根据仓库ID获取仓库详细信息
-        /// </summary>
-        /// <param name="id">仓库ID</param>
-        /// <returns>返回操作结果，包含指定ID的仓库详细信息</returns>
         [HttpGet("{id}")]
         public async Task<Result> Get(int id)
         {
             var currentUser = await _workContext.GetCurrentUserAsync();
             var warehouse = await _warehouseRepository.Query().Include(w => w.Address).FirstOrDefaultAsync(w => w.Id == id);
             if (warehouse == null)
-                throw new Exception("仓库不存在");
+                throw new Exception("The warehouse does not exist");
             var address = warehouse.Address ?? new Address();
             var result = new WarehouseQueryResult
             {
@@ -117,22 +103,18 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 创建新仓库
-        /// </summary>
-        /// <param name="model">仓库创建参数</param>
-        /// <returns>返回操作结果，表示是否创建成功</returns>
+
         [HttpPost]
         public async Task<Result> Post([FromBody] WarehouseCreateParam model)
         {
             var currentUser = await _workContext.GetCurrentUserAsync();
 
-            //验证所选择省市区是否属于国家
+        
             var province = await _provinceRepository.FirstOrDefaultAsync(model.StateOrProvinceId);
             if (province == null)
-                throw new Exception("省市区不存在");
+                throw new Exception("The state or province does not exist");
             if (province.CountryId != model.CountryId)
-                throw new Exception("所选择省市区不属于当前选择的国家");
+                throw new Exception("The selected state or province does not belong to the currently selected country");
 
             var address = new Address
             {
@@ -156,13 +138,7 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 更新仓库
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
+
         [HttpPut("{id:int:min(1)}")]
         public async Task<Result> Put(int id, [FromBody] WarehouseCreateParam model)
         {
@@ -171,14 +147,14 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
                 .Include(x => x.Address)
                 .FirstOrDefaultAsync(x => x.Id == id);
             if (warehouse == null)
-                throw new Exception("仓库不存在");
+                throw new Exception("The warehouse does not exist");
 
-            //验证所选择省市区是否属于国家
+            // Validate whether the selected state or province belongs to the country
             var province = await _provinceRepository.FirstOrDefaultAsync(model.StateOrProvinceId);
             if (province == null)
-                throw new Exception("省市区不存在");
+                throw new Exception("The state or province does not exist");
             if (province.CountryId != model.CountryId)
-                throw new Exception("所选择省市区不属于当前选择的国家");
+                throw new Exception("The selected state or province does not belong to the currently selected country");
 
             warehouse.Name = model.Name;
             warehouse.AdminRemark = model.AdminRemark;
@@ -201,11 +177,6 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 删除仓库
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpDelete("{id:int:min(1)}")]
         public async Task<Result> Delete(int id)
         {
@@ -214,7 +185,7 @@ namespace Shop.Module.Inventory.Areas.Inventory.Controllers
                 .Include(x => x.Address)
                 .FirstOrDefaultAsync(x => x.Id == id);
             if (warehouse == null)
-                return Result.Fail("仓库不存在");
+                return Result.Fail("The warehouse does not exist");
 
             //var any = _productRepository.Query().Any(c => c.DefaultWarehouseId == id);
             //if (any)

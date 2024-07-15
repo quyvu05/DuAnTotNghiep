@@ -11,9 +11,6 @@ using Shop.Module.Reviews.ViewModels;
 
 namespace Shop.Module.Reviews.Controllers
 {
-    /// <summary>
-    /// 点赞 API 控制器，负责处理点赞相关操作。
-    /// </summary>
     [Route("api/supports")]
     [Authorize()]
     public class SupportApiController : ControllerBase
@@ -37,18 +34,14 @@ namespace Shop.Module.Reviews.Controllers
             _workContext = workContext;
         }
 
-        /// <summary>
-        /// 赞(支持)/取消赞
-        /// </summary>
-        /// <param name="param"></param>
-        /// <returns></returns>
+
         [HttpPost]
         public async Task<Result> Support([FromBody] SupportParam param)
         {
             var user = await _workContext.GetCurrentOrThrowAsync();
             var any = supportEntityTypeIds.Any(c => c == param.EntityTypeId);
             if (!any)
-                throw new Exception("参数不支持");
+                throw new Exception("The parameter is not supported");
 
             var model = await _supportRepository
                 .Query(c => c.UserId == user.Id && c.EntityId == param.EntityId && c.EntityTypeId == (int)param.EntityTypeId)
@@ -76,7 +69,7 @@ namespace Shop.Module.Reviews.Controllers
                     {
                         var review = await _reviewRepository.FirstOrDefaultAsync(param.EntityId);
                         if (review == null)
-                            throw new Exception("评论信息不存在");
+                            throw new Exception("The review information does not exist");
                         review.SupportCount += model.IsDeleted ? -1 : 1;
                         review.UpdatedOn = DateTime.Now;
                         supportCount = review.SupportCount;
@@ -87,7 +80,7 @@ namespace Shop.Module.Reviews.Controllers
                     {
                         var reply = await _replyRepository.FirstOrDefaultAsync(param.EntityId);
                         if (reply == null)
-                            throw new Exception("评论信息不存在");
+                            throw new Exception("The review information does not exist");
                         reply.SupportCount += model.IsDeleted ? -1 : 1;
                         reply.UpdatedOn = DateTime.Now;
                         supportCount = reply.SupportCount;
@@ -95,7 +88,7 @@ namespace Shop.Module.Reviews.Controllers
                     break;
 
                 default:
-                    throw new Exception("参数不支持");
+                    throw new Exception("The parameter is not supported");
             }
 
             using (var tran = _supportRepository.BeginTransaction())

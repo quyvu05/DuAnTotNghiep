@@ -15,9 +15,7 @@ namespace Shop.Module.Inventory.Entities
 
         public int StockQuantity { get; set; }
 
-        /// <summary>
-        /// 锁定库存数量
-        /// </summary>
+  
         public int LockedStockQuantity { get; set; }
 
         public int ProductId { get; set; }
@@ -32,9 +30,7 @@ namespace Shop.Module.Inventory.Entities
 
         public bool IsEnabled { get; set; }
 
-        /// <summary>
-        /// 备注
-        /// </summary>
+
         [StringLength(450)]
         public string Note { get; set; }
 

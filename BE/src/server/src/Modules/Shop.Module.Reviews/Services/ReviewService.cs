@@ -42,14 +42,7 @@ namespace Shop.Module.Reviews.Services
             _userRepository = userRepository;
         }
 
-        /// <summary>
-        /// 自动好评
-        /// </summary>
-        /// <param name="entityId"></param>
-        /// <param name="entityTypeId"></param>
-        /// <param name="sourceId"></param>
-        /// <param name="sourceType"></param>
-        /// <returns></returns>
+
         public async Task ReviewAutoGood(int entityId, EntityTypeWithId entityTypeId, int? sourceId, ReviewSourceType? sourceType)
         {
             var systemUserId = (int)UserWithId.System;
@@ -73,9 +66,7 @@ namespace Shop.Module.Reviews.Services
                 }
             }
 
-            // 一个用户
-            // 评论 某订单 某商品只能一次
-            // 评论 无订单关联 评论商品只能一次
+     
             var any = await _reviewRepository.Query().AnyAsync(c => c.EntityTypeId == (int)entityTypeId && c.EntityId == entityId && c.SourceId == sourceId && c.SourceType == sourceType);
             if (any)
             {

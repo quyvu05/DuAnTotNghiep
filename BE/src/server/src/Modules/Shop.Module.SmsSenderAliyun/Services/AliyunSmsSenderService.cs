@@ -106,7 +106,7 @@ namespace Shop.Module.SmsSenderAliyun.Services
                 }
                 else
                 {
-                    model.Message = "发送短信失败";
+                    model.Message = "Failed to send SMS";
                 }
             }
             catch (Exception ex)
@@ -139,12 +139,12 @@ namespace Shop.Module.SmsSenderAliyun.Services
             captcha = captcha.Trim();
             var regex = new Regex(@"^\d{11}$");
             if (!regex.IsMatch(phone))
-                return (false, "手机号格式错误");
+                return (false, "Invalid phone number format");
 
             var cacheKey = ShopKeys.RegisterPhonePrefix + phone;
             if (_cacheManager.IsSet(cacheKey))
             {
-                return (false, "请求频繁，请稍后重试");
+                return (false, "Request too frequent, please try again later");
             }
 
             var code = captcha;
@@ -154,15 +154,15 @@ namespace Shop.Module.SmsSenderAliyun.Services
                 Value = code,
                 TemplateType = SmsTemplateType.Captcha,
                 TemplateCode = "SMS_70055704",
-                SignName = "天网",
+                SignName = "Skynet",
                 TemplateParam = JsonConvert.SerializeObject(new { code }),
             });
             if (success)
             {
                 _cacheManager.Set(cacheKey, code, 1);
-                return (true, "发送成功");
+                return (true, "Send successful");
             }
-            return (false, "发送短信验证码失败");
+            return (false, "Failed to send SMS verification code");
         }
 
         private static string SignString(string source, string accessSecret)

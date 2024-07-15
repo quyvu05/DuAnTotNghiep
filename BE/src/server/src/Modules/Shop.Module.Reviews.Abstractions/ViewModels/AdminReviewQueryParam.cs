@@ -11,9 +11,6 @@ namespace Shop.Module.Reviews.ViewModels
 
         public ReviewStatus? Status { get; set; }
 
-        /// <summary>
-        /// 有图
-        /// </summary>
         public bool? IsMedia { get; set; }
 
         public int? Rating { get; set; }
