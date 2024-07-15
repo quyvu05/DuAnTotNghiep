@@ -111,13 +111,13 @@ namespace Shop.Module.Catalog.ViewModels
         public IList<ProductGetVariationResult> Variations { get; set; } = new List<ProductGetVariationResult>();
 
         public IList<ProductGetMediaResult> ProductImages { get; set; } = new List<ProductGetMediaResult>();
-        public IList<GoodsGetIssueResult> Issues { get; set; } = new List<GoodsGetIssueResult>()
-        {
-            new GoodsGetIssueResult (){ Id =1, Answer="1. Within 30 days from the date of receipt of the goods, customers can apply for worry-free returns, and the refund will be returned to the original route. Different banks have different processing times.", ProductId = 0, Question="How do I request a return?"},
-            new GoodsGetIssueResult (){ Id =1, Answer="1. If you need to issue a general invoice, please select \"I want to issue an invoice\" when placing an order and fill in the relevant information (APP is only available for 2.4.0 and above)", ProductId = 0, Question="How to issue an invoice?"},
-            new GoodsGetIssueResult (){ Id =1, Answer="Yanxuan uses SF Express by default for delivery (some products use other express delivery), and the delivery range covers most parts of the country (except Hong Kong, Macau and Taiwan).", ProductId = 0, Question="What courier do you use for delivery?"}
-        };
-    }
+		public IList<GoodsGetIssueResult> Issues { get; set; } = new List<GoodsGetIssueResult>()
+		{
+			new GoodsGetIssueResult (){ Id =1, Answer="1. Within 30 days from the date of receipt of the goods, customers can apply for worry-free returns, and the refund will be returned to the original route. Different banks have different processing times, ", ProductId = 0, Question="How to request a return？"},
+			new GoodsGetIssueResult (){ Id =1, Answer="1.If you need to issue a general invoice，Please select when placing an order“I want to issue an invoice”And fill in relevant information（APP is limited to 2.4.0 and above", ProductId = 0, Question="How to issue an invoice？"},
+			new GoodsGetIssueResult (){ Id =1, Answer="Yanxuan uses SF Express by default for delivery（Some products use other couriers），The delivery range covers most areas of the country（Except Hong Kong, Macau and Taiwan", ProductId = 0, Question="What courier to use for delivery？"}
+		};
+	}
     public class GoodsGetAttributeResult
     {
         public string Key { get; set; }

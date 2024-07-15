@@ -26,10 +26,10 @@ using Shop.Module.Shipments.Entities;
 
 namespace Shop.Module.Orders.Controllers
 {
-    /// <summary>
-    /// 客户订单 API 控制器，用于处理客户订单相关的操作。
-    /// </summary>
-    [Authorize()]
+	/// <summary>
+	/// Customer order API controller, used to handle operations related to customer orders.
+	/// </summary>
+	[Authorize()]
     [Route("api/customer-orders")]
     public class CustomerOrderApiController : ControllerBase
     {
@@ -92,12 +92,12 @@ namespace Shop.Module.Orders.Controllers
             _locker = locker;
         }
 
-        /// <summary>
-        /// 获取指定客户订单的详细信息。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <returns>指定订单的详细信息。</returns>
-        [HttpGet("{id:int:min(1)}")]
+		/// <summary>
+		/// Get detailed information of the specified customer's order.
+		/// </summary>
+		/// <param name="id">Order ID. </param>
+		/// <returns>Detailed information of the specified order. </returns>
+		[HttpGet("{id:int:min(1)}")]
         public async Task<Result> Get(int id)
         {
             var user = await _workContext.GetCurrentUserAsync();
@@ -159,12 +159,12 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 分页获取客户的订单列表。
-        /// </summary>
-        /// <param name="param">分页查询参数。</param>
-        /// <returns>分页的客户订单列表。</returns>
-        [HttpPost("grid")]
+		/// <summary>
+		/// Get the customer's order list by page.
+		/// </summary>
+		/// <param name="param">Page query parameter. </param>
+		/// <returns>Paged customer order list. </returns>
+		[HttpPost("grid")]
         public async Task<Result<StandardTableResult<CustomerOrderQueryResult>>> List([FromBody] StandardTableParam<CustomerOrderQueryParam> param)
         {
             var user = await _workContext.GetCurrentUserAsync();
@@ -220,8 +220,8 @@ namespace Shop.Module.Orders.Controllers
                         ProductPrice = x.ProductPrice,
                         Quantity = x.Quantity,
                         ShippedQuantity = x.ShippedQuantity
-                    }),// EF CORE 子查询列表 top bug, 不允许此操作.Take(2), // 列表中最多显示2个商品
-                    ItemsTotal = c.OrderItems.Sum(x => x.Quantity),
+                    }),// EF CORE subquery list top bug, this operation is not allowed.Take(2), // A maximum of 2 items are displayed in the list
+					ItemsTotal = c.OrderItems.Sum(x => x.Quantity),
                     ItemsCount = c.OrderItems.Count,
                     PaymentEndOn = c.PaymentEndOn,
                     DeliveredEndOn = c.DeliveredEndOn
@@ -240,185 +240,185 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 客户取消订单。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <param name="reason">取消订单的原因。</param>
-        /// <returns>取消订单操作的结果。</returns>
-        [HttpPut("{id:int:min(1)}/cancel")]
-        public async Task<Result> Cancel(int id, [FromBody] OrderCancelParam reason)
-        {
-            var user = await _workContext.GetCurrentOrThrowAsync();
-            var order = await _orderRepository.Query()
-                .FirstOrDefaultAsync(c => c.CustomerId == user.Id && c.Id == id);
-            if (order == null)
-            {
-                return Result.Fail("订单不存在");
-            }
-            else if (order.OrderStatus == OrderStatus.Canceled)
-            {
-                return Result.Fail("订单已取消");
-            }
-            var orderSs = new OrderStatus[] { OrderStatus.New, OrderStatus.PendingPayment, OrderStatus.PaymentFailed };
-            if (!orderSs.Contains(order.OrderStatus))
-            {
-                return Result.Fail("当前订单无法取消"); ;
-            }
-            await _orderService.Cancel(id, user.Id, reason?.Reason);
-            return Result.Ok();
-        }
+		/// <summary>
+		/// The customer canceled the order.
+		/// </summary>
+		/// <param name="id">Order ID. </param>
+		/// <param name="reason">Reason for canceling the order. </param>
+		/// <returns>The result of the cancel order operation. </returns>
+		[HttpPut("{id:int:min(1)}/cancel")]
+		public async Task<Result> Cancel(int id, [FromBody] OrderCancelParam reason)
+		{
+			var user = await _workContext.GetCurrentOrThrowAsync();
+			var order = await _orderRepository.Query()
+			.FirstOrDefaultAsync(c => c.CustomerId == user.Id && c.Id == id);
+			if (order == null)
+			{
+				return Result.Fail("Order does not exist");
+			}
+			else if (order.OrderStatus == OrderStatus.Canceled)
+			{
+				return Result.Fail("Order canceled");
+			}
+			var orderSs = new OrderStatus[] { OrderStatus.New, OrderStatus.PendingPayment, OrderStatus.PaymentFailed };
+			if (!orderSs.Contains(order.OrderStatus))
+			{
+				return Result.Fail("The current order cannot be cancelled"); ;
+			}
+			await _orderService.Cancel(id, user.Id, reason?.Reason);
+			return Result.Ok();
+		}
 
-        /// <summary>
-        /// 客户删除订单。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <returns>删除订单操作的结果。</returns>
-        [HttpDelete("{id:int:min(1)}")]
-        public async Task<Result> Delete(int id)
-        {
-            var currentUser = await _workContext.GetCurrentOrThrowAsync();
-            var order = await _orderRepository
-                .Query()
-                .Include(c => c.BillingAddress)
-                .Include(c => c.ShippingAddress)
-                .Include(c => c.OrderItems).ThenInclude(c => c.Product)
-                .Where(c => c.Id == id && c.CustomerId == currentUser.Id).FirstOrDefaultAsync();
-            if (order == null)
-            {
-                return Result.Fail("订单不存在");
-            }
-            var orderSs = new OrderStatus[] { OrderStatus.Complete, OrderStatus.Canceled };
-            if (!orderSs.Contains(order.OrderStatus))
-            {
-                return Result.Fail("当前订单状态不允许删除");
-            }
+		/// <summary>
+		/// The customer deleted the order.
+		/// </summary>
+		/// <param name="id">Order ID. </param>
+		/// <returns>The result of the delete order operation. </returns>
+		[HttpDelete("{id:int:min(1)}")]
+		public async Task<Result> Delete(int id)
+		{
+			var currentUser = await _workContext.GetCurrentOrThrowAsync();
+			var order = await _orderRepository
+			.Query()
+			.Include(c => c.BillingAddress)
+			.Include(c => c.ShippingAddress)
+			.Include(c => c.OrderItems).ThenInclude(c => c.Product)
+			.Where(c => c.Id == id && c.CustomerId == currentUser.Id).FirstOrDefaultAsync();
+			if (order == null)
+			{
+				return Result.Fail("Order does not exist");
+			}
+			var orderSs = new OrderStatus[] { OrderStatus.Complete, OrderStatus.Canceled };
+			if (!orderSs.Contains(order.OrderStatus))
+			{
+				return Result.Fail("Current order status does not allow deletion");
+			}
 
-            if (order.ShippingAddress != null)
-            {
-                order.ShippingAddress.IsDeleted = true;
-                order.ShippingAddress.UpdatedOn = DateTime.Now;
-            }
-            if (order.BillingAddress != null)
-            {
-                order.BillingAddress.IsDeleted = true;
-                order.BillingAddress.UpdatedOn = DateTime.Now;
-            }
+			if (order.ShippingAddress != null)
+			{
+				order.ShippingAddress.IsDeleted = true;
+				order.ShippingAddress.UpdatedOn = DateTime.Now;
+			}
+			if (order.BillingAddress != null)
+			{
+				order.BillingAddress.IsDeleted = true;
+				order.BillingAddress.UpdatedOn = DateTime.Now;
+			}
 
-            foreach (var item in order.OrderItems)
-            {
-                item.IsDeleted = true;
-                item.UpdatedOn = DateTime.Now;
-                item.UpdatedBy = currentUser;
-            }
+			foreach (var item in order.OrderItems)
+			{
+				item.IsDeleted = true;
+				item.UpdatedOn = DateTime.Now;
+				item.UpdatedBy = currentUser;
+			}
 
-            //删除订单暂不删除历史
+			//Delete order without deleting history
 
-            order.IsDeleted = true;
-            order.UpdatedOn = DateTime.Now;
-            order.UpdatedBy = currentUser;
+			order.IsDeleted = true;
+			order.UpdatedOn = DateTime.Now;
+			order.UpdatedBy = currentUser;
 
-            await _orderRepository.SaveChangesAsync();
-            return Result.Ok();
-        }
+			await _orderRepository.SaveChangesAsync();
+			return Result.Ok();
+		}
 
-        /// <summary>
-        /// 客户确认收货。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <returns>确认收货操作的结果。</returns>
-        [HttpPut("{id:int:min(1)}/cinfirm-receipt")]
-        public async Task<Result> CinfirmReceipt(int id)
-        {
-            var user = await _workContext.GetCurrentOrThrowAsync();
-            var order = await _orderRepository.Query()
-                .FirstOrDefaultAsync(c => c.CustomerId == user.Id && c.Id == id);
-            if (order == null)
-            {
-                return Result.Fail("订单不存在");
-            }
-            else if (order.OrderStatus == OrderStatus.Canceled)
-            {
-                return Result.Fail("订单已取消");
-            }
-            var orderSs = new OrderStatus[] { OrderStatus.PaymentReceived, OrderStatus.Shipping, OrderStatus.Shipped };
-            if (!orderSs.Contains(order.OrderStatus))
-            {
-                return Result.Fail("当前订单无法确认收货"); ;
-            }
+		/// <summary>
+		/// The customer confirms receipt.
+		/// </summary>
+		/// <param name="id">Order ID. </param>
+		/// <returns>The result of the confirmation receipt operation. </returns>
+		[HttpPut("{id:int:min(1)}/cinfirm-receipt")]
+		public async Task<Result> CinfirmReceipt(int id)
+		{
+			var user = await _workContext.GetCurrentOrThrowAsync();
+			var order = await _orderRepository.Query()
+			.FirstOrDefaultAsync(c => c.CustomerId == user.Id && c.Id == id);
+			if (order == null)
+			{
+				return Result.Fail("Order does not exist");
+			}
+			else if (order.OrderStatus == OrderStatus.Canceled)
+			{
+				return Result.Fail("Order canceled");
+			}
+			var orderSs = new OrderStatus[] { OrderStatus.PaymentReceived, OrderStatus.Shipping, OrderStatus.Shipped };
+			if (!orderSs.Contains(order.OrderStatus))
+			{
+				return Result.Fail("The current order cannot confirm receipt"); ;
+			}
 
-            order.OrderStatus = OrderStatus.Complete;
-            order.ShippingStatus = ShippingStatus.Delivered;
-            order.DeliveredOn = DateTime.Now;
-            order.UpdatedOn = DateTime.Now;
-            order.UpdatedById = user.Id;
-            await _orderRepository.SaveChangesAsync();
+			order.OrderStatus = OrderStatus.Complete;
+			order.ShippingStatus = ShippingStatus.Delivered;
+			order.DeliveredOn = DateTime.Now;
+			order.UpdatedOn = DateTime.Now;
+			order.UpdatedById = user.Id;
+			await _orderRepository.SaveChangesAsync();
 
-            // 自动好评
-            var min = await _appSettingService.Get<int>(OrderKeys.OrderCompleteAutoReviewTimeForMinute);
-            foreach (var item in order.OrderItems)
-            {
-                await _jobService.Schedule(() =>
-                _reviewService.ReviewAutoGood(item.ProductId, EntityTypeWithId.Product, order.Id, ReviewSourceType.Order)
-                , TimeSpan.FromMinutes(min));
-            }
+			// Automatic good reviews
+			var min = await _appSettingService.Get<int>(OrderKeys.OrderCompleteAutoReviewTimeForMinute);
+			foreach (var item in order.OrderItems)
+			{
+				await _jobService.Schedule(() =>
+				_reviewService.ReviewAutoGood(item.ProductId, EntityTypeWithId.Product, order.Id, ReviewSourceType.Order)
+				, TimeSpan.FromMinutes(min));
+			}
 
-            return Result.Ok();
-        }
+			return Result.Ok();
+		}
 
-        /// <summary>
-        /// 买家延长确认收货+7天，最大不超过60d
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [HttpPut("{id:int:min(1)}/delay-cinfirm-receipt")]
-        public async Task<Result> DelayCinfirmReceipt(int id)
-        {
-            var user = await _workContext.GetCurrentOrThrowAsync();
-            var order = await _orderRepository.Query()
-                .FirstOrDefaultAsync(c => c.CustomerId == user.Id && c.Id == id);
-            if (order == null)
-            {
-                return Result.Fail("订单不存在");
-            }
-            else if (order.OrderStatus == OrderStatus.Canceled)
-            {
-                return Result.Fail("订单已取消");
-            }
-            var orderSs = new OrderStatus[] { OrderStatus.PaymentReceived, OrderStatus.Shipping, OrderStatus.Shipped };
-            if (!orderSs.Contains(order.OrderStatus))
-            {
-                return Result.Fail("当前订单无法延长确认收货时间"); ;
-            }
+		/// <summary>
+		/// The buyer extends the confirmation of receipt by +7 days, with a maximum of 60 days
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		[HttpPut("{id:int:min(1)}/delay-cinfirm-receipt")]
+		public async Task<Result> DelayCinfirmReceipt(int id)
+		{
+			var user = await _workContext.GetCurrentOrThrowAsync();
+			var order = await _orderRepository.Query()
+			.FirstOrDefaultAsync(c => c.CustomerId == user.Id && c.Id == id);
+			if (order == null)
+			{
+				return Result.Fail("Order does not exist");
+			}
+			else if (order.OrderStatus == OrderStatus.Canceled)
+			{
+				return Result.Fail("Order canceled");
+			}
+			var orderSs = new OrderStatus[] { OrderStatus.PaymentReceived, OrderStatus.Shipping, OrderStatus.Shipped };
+			if (!orderSs.Contains(order.OrderStatus))
+			{
+				return Result.Fail("The current order cannot extend the confirmation receipt time"); ;
+			}
 
-            var timeFromMin = await _appSettingService.Get<int>(OrderKeys.OrderAutoCompleteTimeForMinute);
-            if (order.DeliveredEndOn == null)
-            {
-                order.DeliveredEndOn = DateTime.Now;
-            }
-            order.DeliveredEndOn = order.DeliveredEndOn.Value.AddMinutes(timeFromMin);
+			var timeFromMin = await _appSettingService.Get<int>(OrderKeys.OrderAutoCompleteTimeForMinute);
+			if (order.DeliveredEndOn == null)
+			{
+				order.DeliveredEndOn = DateTime.Now;
+			}
+			order.DeliveredEndOn = order.DeliveredEndOn.Value.AddMinutes(timeFromMin);
 
-            if (order.DeliveredEndOn > order.CreatedOn.AddDays(60))
-            {
-                return Result.Fail("延长确认收货时间最大不可超过60天");
-            }
+			if (order.DeliveredEndOn > order.CreatedOn.AddDays(60))
+			{
+				return Result.Fail("Extending the confirmation receipt time cannot exceed 60 days");
+			}
 
-            order.UpdatedOn = DateTime.Now;
-            order.UpdatedById = user.Id;
-            await _orderRepository.SaveChangesAsync();
-            return Result.Ok();
-        }
+			order.UpdatedOn = DateTime.Now;
+			order.UpdatedById = user.Id;
+			await _orderRepository.SaveChangesAsync();
+			return Result.Ok();
+		}
 
-        /// <summary>
-        /// 获取订单支付信息。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <returns>订单支付信息。</returns>
-        [HttpGet("{id:int:min(1)}/pay")]
-        public async Task<Result> PayInfo(int id)
-        {
-            var result = await _orderService.PayInfo(id);
-            return Result.Ok(result);
-        }
-    }
+		/// <summary>
+		/// Get order payment information.
+		/// </summary>
+		/// <param name="id">Order ID. </param>
+		/// <returns>Order payment information. </returns>
+		[HttpGet("{id:int:min(1)}/pay")]
+		public async Task<Result> PayInfo(int id)
+		{
+			var result = await _orderService.PayInfo(id);
+			return Result.Ok(result);
+		}
+	}
 }

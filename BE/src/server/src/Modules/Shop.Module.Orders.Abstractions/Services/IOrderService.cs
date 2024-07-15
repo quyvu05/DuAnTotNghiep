@@ -15,20 +15,10 @@ namespace Shop.Module.Orders.Services
 
         Task<OrderAddressResult> GetOrderAddress(int orderAddressId);
 
-        /// <summary>
-        /// 获取订单预支付信息
-        /// </summary>
-        /// <param name="orderId"></param>
-        /// <returns></returns>
         Task<PaymentOrderBaseResponse> PayInfo(int orderId);
 
         Task PaymentReceived(PaymentReceivedParam param);
 
-        /// <summary>
-        /// 验证并获取预下单信息
-        /// </summary>
-        /// <param name="param"></param>
-        /// <returns></returns>
         Task<CheckoutResult> OrderCheckout(CheckoutParam param);
     }
 }

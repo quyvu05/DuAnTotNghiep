@@ -37,30 +37,30 @@ namespace Shop.Module.Orders.Data
 
             var opt = new OrderOptions();
             modelBuilder.Entity<AppSetting>().HasData(
-                new AppSetting(OrderKeys.OrderAutoCanceledTimeForMinute)
-                {
-                    Module = module,
-                    IsVisibleInCommonSettingPage = true,
-                    Value = opt.OrderAutoCanceledTimeForMinute.ToString(),
-                    Type = typeof(int).FullName,
-                    Note = "订单下单后超时自动取消订单时间（单位：分钟）"
-                },
+				new AppSetting(OrderKeys.OrderAutoCanceledTimeForMinute)
+				{
+					Module = module,
+					IsVisibleInCommonSettingPage = true,
+					Value = opt.OrderAutoCanceledTimeForMinute.ToString(),
+					Type = typeof(int).FullName,
+					Note = "Time to automatically cancel an order after it is placed (unit: minutes)"
+				},
                 new AppSetting(OrderKeys.OrderAutoCompleteTimeForMinute)
                 {
-                    Module = module,
-                    IsVisibleInCommonSettingPage = true,
-                    Value = opt.OrderAutoCompleteTimeForMinute.ToString(),
-                    Type = typeof(int).FullName,
-                    Note = "订单支付后超时自动完成订单时间（买家未在指定的时间内确认收货,则系统自动确认收货完成订单，单位：分钟）"
+	                Module = module,
+	                IsVisibleInCommonSettingPage = true,
+	                Value = opt.OrderAutoCompleteTimeForMinute.ToString(),
+	                Type = typeof(int).FullName,
+	                Note = "Time to automatically complete an order after it is paid (if the buyer does not confirm receipt within the specified time, the system will automatically confirm receipt and complete the order, unit: minutes)"
                 },
-                new AppSetting(OrderKeys.OrderCompleteAutoReviewTimeForMinute)
-                {
-                    Module = module,
-                    IsVisibleInCommonSettingPage = true,
-                    Value = opt.OrderCompleteAutoReviewTimeForMinute.ToString(),
-                    Type = typeof(int).FullName,
-                    Note = "订单完成后超时自动好评时间（买家未在指定的时间内评价,则系统自动好评，单位：分钟）"
-                });
-        }
+				new AppSetting(OrderKeys.OrderCompleteAutoReviewTimeForMinute)
+				{
+					Module = module,
+					IsVisibleInCommonSettingPage = true,
+					Value = opt.OrderCompleteAutoReviewTimeForMinute.ToString(),
+					Type = typeof(int).FullName,
+					Note = "Timeout for automatic review after order completion (if the buyer does not review within the specified time, the system will automatically review, unit: minutes)"
+				});
+		}
     }
 }
