@@ -22,10 +22,10 @@ using Shop.Module.Shipments.Entities;
 
 namespace Shop.Module.Orders.Controllers
 {
-    /// <summary>
-    /// 管理员订单 API 控制器，处理订单的管理和操作。
-    /// </summary>
-    [Authorize(Roles = "admin")]
+	/// <summary>
+	/// Admin Order API Controller, handles order management and operations.
+	/// </summary>
+	[Authorize(Roles = "admin")]
     [Route("api/orders")]
     public class OrderApiController : ControllerBase
     {
@@ -73,11 +73,6 @@ namespace Shop.Module.Orders.Controllers
             _appSettingService = appSettingService;
         }
 
-        /// <summary>
-        /// 根据订单 ID 获取订单详细信息。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <returns>订单详细信息。</returns>
         [HttpGet("{id:int:min(1)}")]
         public async Task<Result<OrderGetResult>> Get(int id)
         {
@@ -85,11 +80,6 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 根据订单号获取订单详细信息。
-        /// </summary>
-        /// <param name="no">订单号。</param>
-        /// <returns>订单详细信息。</returns>
         [HttpGet("{no:long:min(1)}/no")]
         public async Task<Result<OrderGetResult>> GetByNo(long no)
         {
@@ -97,43 +87,38 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 创建新订单。
-        /// </summary>
-        /// <param name="model">订单创建参数。</param>
-        /// <returns>创建操作的结果。</returns>
-        [HttpPost]
-        public async Task<Result> Post([FromBody] OrderCreateParam model)
-        {
-            if (model == null)
-                throw new Exception("参数异常");
-            if (model.Items == null || model.Items.Count <= 0)
-                throw new Exception("请添加商品");
-            if (model.Items.Any(c => c.Quantity <= 0))
-                throw new Exception("购买商品数量必须>0");
+		[HttpPost]
+		public async Task<Result> Post([FromBody] OrderCreateParam model)
+		{
+			if (model == null)
+				throw new Exception("Parameter exception");
+			if (model.Items == null || model.Items.Count <= 0)
+				throw new Exception("Please add items");
+			if (model.Items.Any(c => c.Quantity <= 0))
+				throw new Exception("The quantity of purchased items must be > 0");
 
-            var user = await _workContext.GetCurrentUserAsync();
+			var user = await _workContext.GetCurrentUserAsync();
 
-            var customer = await _userRepository.FirstOrDefaultAsync(model.CustomerId);
-            if (customer == null)
-                throw new Exception("客户不存在");
+			var customer = await _userRepository.FirstOrDefaultAsync(model.CustomerId);
+			if (customer == null)
+				throw new Exception("Customer does not exist");
 
-            var order = new Order()
-            {
-                OrderStatus = OrderStatus.New,
-                CreatedBy = user,
-                UpdatedBy = user,
-                CustomerId = model.CustomerId,
-                AdminNote = model.AdminNote,
-                OrderNote = model.OrderNote,
-                ShippingMethod = model.ShippingMethod,
-                PaymentType = model.PaymentType,
-                ShippingFeeAmount = model.ShippingFeeAmount,
-                OrderTotal = model.OrderTotal,
-                DiscountAmount = model.DiscountAmount,
-            };
+			var order = new Order()
+			{
+				OrderStatus = OrderStatus.New,
+				CreatedBy = user,
+				UpdatedBy = user,
+				CustomerId = model.CustomerId,
+				AdminNote = model.AdminNote,
+				OrderNote = model.OrderNote,
+				ShippingMethod = model.ShippingMethod,
+				PaymentType = model.PaymentType,
+				ShippingFeeAmount = model.ShippingFeeAmount,
+				OrderTotal = model.OrderTotal,
+				DiscountAmount = model.DiscountAmount,
+			};
 
-            OrderAddress orderShipping = null;
+			OrderAddress orderShipping = null;
             OrderAddress orderBilling = null;
             if (model.ShippingUserAddressId.HasValue && model.ShippingUserAddressId.Value > 0)
             {
@@ -186,25 +171,25 @@ namespace Shop.Module.Orders.Controllers
                 .Include(c => c.ThumbnailImage)
                 .Where(c => productIds.Contains(c.Id)).ToListAsync();
 
-            if (productIds.Count() <= 0)
-                throw new Exception("商品不存在");
+			if (productIds.Count() <= 0)
+				throw new Exception("Product does not exist");
 
-            var stocks = await _stockRepository.Query().Where(c => productIds.Contains(c.ProductId)).ToListAsync();
-            var addStockHistories = new List<StockHistory>();
-            foreach (var item in products)
-            {
-                var first = model.Items.FirstOrDefault(c => c.Id == item.Id);
-                if (first == null)
-                    throw new Exception($"产品[{item.Name}]不存在");
+			var stocks = await _stockRepository.Query().Where(c => productIds.Contains(c.ProductId)).ToListAsync();
+			var addStockHistories = new List<StockHistory>();
+			foreach (var item in products)
+			{
+				var first = model.Items.FirstOrDefault(c => c.Id == item.Id);
+				if (first == null)
+					throw new Exception($"Product [{item.Name}] does not exist");
 
-                if (!item.IsPublished)
-                    throw new Exception($"产品[{item.Name}]未发布");
-                if (!item.IsAllowToOrder)
-                    throw new Exception($"产品[{item.Name}]不允许购买");
+				if (!item.IsPublished)
+					throw new Exception($"Product [{item.Name}] is not published");
+				if (!item.IsAllowToOrder)
+					throw new Exception($"Product [{item.Name}] is not allowed to be purchased");
 
-                OrderStockDoWorker(stocks, addStockHistories, item, user, -first.Quantity, order, "创建订单");
+				OrderStockDoWorker(stocks, addStockHistories, item, user, -first.Quantity, order, "Create Order");
 
-                var orderItem = new OrderItem()
+				var orderItem = new OrderItem()
                 {
                     Order = order,
                     Product = item,
@@ -255,45 +240,34 @@ namespace Shop.Module.Orders.Controllers
                 transaction.Commit();
             }
 
-            //TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted }
-            //using (var ts = new TransactionScope())
-            //{
-            //    ts.Complete();
-            //}
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 更新订单信息。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <param name="model">订单编辑参数。</param>
-        /// <returns>更新操作的结果。</returns>
-        [HttpPut("{id:int:min(1)}")]
-        public async Task<Result> Put(int id, [FromBody] OrderEditParam model)
-        {
-            if (model == null)
-                throw new Exception("参数异常");
-            if (model.Items == null || model.Items.Count <= 0)
-                throw new Exception("请添加商品");
-            if (model.Items.Any(c => c.Quantity <= 0))
-                throw new Exception("购买商品数量必须>0");
+		[HttpPut("{id:int:min(1)}")]
+		public async Task<Result> Put(int id, [FromBody] OrderEditParam model)
+		{
+			if (model == null)
+				throw new Exception("Parameter exception");
+			if (model.Items == null || model.Items.Count <= 0)
+				throw new Exception("Please add items");
+			if (model.Items.Any(c => c.Quantity <= 0))
+				throw new Exception("The quantity of purchased items must be > 0");
 
-            var currentUser = await _workContext.GetCurrentUserAsync();
-            var order = await _orderRepository
-                .Query()
-                .Include(c => c.Customer)
-                .Include(c => c.BillingAddress)
-                .Include(c => c.ShippingAddress)
-                .Include(c => c.OrderItems)
-                .Where(c => c.Id == id).FirstOrDefaultAsync();
-            if (order == null)
-                throw new Exception("订单不存在");
+			var currentUser = await _workContext.GetCurrentUserAsync();
+			var order = await _orderRepository
+			.Query()
+			.Include(c => c.Customer)
+			.Include(c => c.BillingAddress)
+			.Include(c => c.ShippingAddress)
+			.Include(c => c.OrderItems)
+			.Where(c => c.Id == id).FirstOrDefaultAsync();
+			if (order == null)
+				throw new Exception("Order does not exist");
 
-            var user = await _workContext.GetCurrentUserAsync();
-            var oldStatus = order.OrderStatus;
+			var user = await _workContext.GetCurrentUserAsync();
+			var oldStatus = order.OrderStatus;
 
-            order.ShippingAddressId = model.ShippingAddressId;
+			order.ShippingAddressId = model.ShippingAddressId;
             order.BillingAddressId = model.BillingAddressId;
 
             if (model.ShippingAddress != null)
@@ -368,27 +342,27 @@ namespace Shop.Module.Orders.Controllers
                 }
             }
 
-            var productIds = model.Items.Select(c => c.Id).Distinct();
-            var products = await _productRepository.Query()
-                .Include(c => c.ThumbnailImage)
-                .Where(c => productIds.Contains(c.Id)).ToListAsync();
-            if (productIds.Count() <= 0)
-                throw new Exception("商品不存在");
+			var productIds = model.Items.Select(c => c.Id).Distinct();
+			var products = await _productRepository.Query()
+			.Include(c => c.ThumbnailImage)
+			.Where(c => productIds.Contains(c.Id)).ToListAsync();
+			if (productIds.Count() <= 0)
+				throw new Exception("Product does not exist");
 
-            var stocks = await _stockRepository.Query().Where(c => productIds.Contains(c.ProductId)).ToListAsync();
-            var addStockHistories = new List<StockHistory>();
-            foreach (var item in products)
-            {
-                var first = model.Items.FirstOrDefault(c => c.Id == item.Id);
-                if (first == null)
-                    throw new Exception($"产品[{item.Name}]不存在");
+			var stocks = await _stockRepository.Query().Where(c => productIds.Contains(c.ProductId)).ToListAsync();
+			var addStockHistories = new List<StockHistory>();
+			foreach (var item in products)
+			{
+				var first = model.Items.FirstOrDefault(c => c.Id == item.Id);
+				if (first == null)
+					throw new Exception($"Product [{item.Name}] does not exist");
 
-                if (!item.IsPublished)
-                    throw new Exception($"产品[{item.Name}]未发布");
-                if (!item.IsAllowToOrder)
-                    throw new Exception($"产品[{item.Name}]不允许购买");
+				if (!item.IsPublished)
+					throw new Exception($"Product [{item.Name}] is not published");
+				if (!item.IsAllowToOrder)
+					throw new Exception($"Product [{item.Name}] is not allowed to be purchased");
 
-                var productStocks = stocks.Where(c => c.ProductId == item.Id);
+				var productStocks = stocks.Where(c => c.ProductId == item.Id);
 
                 if (order.OrderItems.Any(c => c.ProductId == item.Id))
                 {
@@ -406,27 +380,27 @@ namespace Shop.Module.Orders.Controllers
                     orderItem.ProductMediaUrl = item.ThumbnailImage?.Url;
                     orderItem.UpdatedOn = DateTime.Now;
                 }
-                else
-                {
-                    OrderStockDoWorker(stocks, addStockHistories, item, user, -first.Quantity, order, "修改订单，增加商品");
+				else
+				{
+					OrderStockDoWorker(stocks, addStockHistories, item, user, -first.Quantity, order, "Modify order, add goods");
 
-                    var orderItem = new OrderItem()
-                    {
-                        Order = order,
-                        Product = item,
-                        ItemWeight = 0,
-                        ItemAmount = first.Quantity * first.ProductPrice - first.DiscountAmount,
-                        Quantity = first.Quantity,
-                        ProductPrice = first.ProductPrice,
-                        DiscountAmount = first.DiscountAmount,
-                        CreatedBy = user,
-                        UpdatedBy = user,
-                        ProductName = item.Name,
-                        ProductMediaUrl = item.ThumbnailImage?.Url
-                    };
-                    order.OrderItems.Add(orderItem);
-                }
-            }
+					var orderItem = new OrderItem()
+					{
+						Order = order,
+						Product = item,
+						ItemWeight = 0,
+						ItemAmount = first.Quantity * first.ProductPrice - first.DiscountAmount,
+						Quantity = first.Quantity,
+						ProductPrice = first.ProductPrice,
+						DiscountAmount = first.DiscountAmount,
+						CreatedBy = user,
+						UpdatedBy = user,
+						ProductName = item.Name,
+						ProductMediaUrl = item.ThumbnailImage?.Url
+					};
+					order.OrderItems.Add(orderItem);
+				}
+			}
             var deletedProductItems = order.OrderItems.Where(c => !productIds.Contains(c.ProductId));
             foreach (var item in deletedProductItems)
             {
@@ -484,66 +458,55 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 删除指定订单。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <returns>删除操作的结果。</returns>
-        [HttpDelete("{id:int:min(1)}")]
-        public async Task<Result> Delete(int id)
-        {
-            var currentUser = await _workContext.GetCurrentUserAsync();
-            var order = await _orderRepository
-                .Query()
-                .Include(c => c.BillingAddress)
-                .Include(c => c.ShippingAddress)
-                .Include(c => c.OrderItems).ThenInclude(c => c.Product)
-                .Where(c => c.Id == id).FirstOrDefaultAsync();
-            if (order == null)
-            {
-                return Result.Fail("订单不存在");
-            }
-            var orderSs = new OrderStatus[] { OrderStatus.Complete, OrderStatus.Canceled };
-            if (!orderSs.Contains(order.OrderStatus))
-            {
-                return Result.Fail("当前订单状态不允许删除");
-            }
+		[HttpDelete("{id:int:min(1)}")]
+		public async Task<Result> Delete(int id)
+		{
+			var currentUser = await _workContext.GetCurrentUserAsync();
+			var order = await _orderRepository
+			.Query()
+			.Include(c => c.BillingAddress)
+			.Include(c => c.ShippingAddress)
+			.Include(c => c.OrderItems).ThenInclude(c => c.Product)
+			.Where(c => c.Id == id).FirstOrDefaultAsync();
+			if (order == null)
+			{
+				return Result.Fail("Order does not exist");
+			}
+			var orderSs = new OrderStatus[] { OrderStatus.Complete, OrderStatus.Canceled };
+			if (!orderSs.Contains(order.OrderStatus))
+			{
+				return Result.Fail("The current order status does not allow deletion");
+			}
 
-            if (order.ShippingAddress != null)
-            {
-                order.ShippingAddress.IsDeleted = true;
-                order.ShippingAddress.UpdatedOn = DateTime.Now;
-            }
-            if (order.BillingAddress != null)
-            {
-                order.BillingAddress.IsDeleted = true;
-                order.BillingAddress.UpdatedOn = DateTime.Now;
-            }
+			if (order.ShippingAddress != null)
+			{
+				order.ShippingAddress.IsDeleted = true;
+				order.ShippingAddress.UpdatedOn = DateTime.Now;
+			}
+			if (order.BillingAddress != null)
+			{
+				order.BillingAddress.IsDeleted = true;
+				order.BillingAddress.UpdatedOn = DateTime.Now;
+			}
 
-            foreach (var item in order.OrderItems)
-            {
-                item.IsDeleted = true;
-                item.UpdatedOn = DateTime.Now;
-                item.UpdatedBy = currentUser;
-            }
+			foreach (var item in order.OrderItems)
+			{
+				item.IsDeleted = true;
+				item.UpdatedOn = DateTime.Now;
+				item.UpdatedBy = currentUser;
+			}
 
-            //删除订单暂不删除历史
+			//Delete the order without deleting the history
 
-            order.IsDeleted = true;
-            order.UpdatedOn = DateTime.Now;
-            order.UpdatedBy = currentUser;
+			order.IsDeleted = true;
+			order.UpdatedOn = DateTime.Now;
+			order.UpdatedBy = currentUser;
 
-            await _orderRepository.SaveChangesAsync();
-            return Result.Ok();
-        }
+			await _orderRepository.SaveChangesAsync();
+			return Result.Ok();
+		}
 
-        /// <summary>
-        /// 取消指定订单。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <param name="reason">取消订单的原因。</param>
-        /// <returns>取消操作的结果。</returns>
-        [HttpPut("{id:int:min(1)}/cancel")]
+		[HttpPut("{id:int:min(1)}/cancel")]
         public async Task<Result> Cancel(int id, [FromBody] OrderCancelParam reason)
         {
             var currentUser = await _workContext.GetCurrentUserAsync();
@@ -551,85 +514,69 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 将指定订单挂起。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <param name="param">挂起订单的参数。</param>
-        /// <returns>挂起操作的结果。</returns>
-        [HttpPut("{id:int:min(1)}/on-hold")]
-        public async Task<Result> OnHold(int id, [FromBody] OrderOnHoldParam param)
-        {
-            var currentUser = await _workContext.GetCurrentUserAsync();
-            var order = await _orderRepository
-                .Query()
-                .Where(c => c.Id == id).FirstOrDefaultAsync();
-            if (order == null)
-                return Result.Fail("订单不存在");
+		[HttpPut("{id:int:min(1)}/on-hold")]
+		public async Task<Result> OnHold(int id, [FromBody] OrderOnHoldParam param)
+		{
+			var currentUser = await _workContext.GetCurrentUserAsync();
+			var order = await _orderRepository
+			.Query()
+			.Where(c => c.Id == id).FirstOrDefaultAsync();
+			if (order == null)
+				return Result.Fail("Order does not exist");
 
-            if (order.OrderStatus == OrderStatus.OnHold)
-                return Result.Fail("订单已挂起");
+			if (order.OrderStatus == OrderStatus.OnHold)
+				return Result.Fail("Order is suspended");
 
-            var orderNotSs = new OrderStatus[] { OrderStatus.Canceled, OrderStatus.Complete };
-            if (orderNotSs.Contains(order.OrderStatus))
-                return Result.Fail("当前订单状态不允许挂起");
+			var orderNotSs = new OrderStatus[] { OrderStatus.Canceled, OrderStatus.Complete };
+			if (orderNotSs.Contains(order.OrderStatus))
+				return Result.Fail("Current order status does not allow suspension");
 
-            var oldStatus = order.OrderStatus;
+			var oldStatus = order.OrderStatus;
 
-            order.OrderStatus = OrderStatus.OnHold;
-            order.OnHoldReason = param?.Reason;
-            order.UpdatedOn = DateTime.Now;
-            order.UpdatedBy = currentUser;
-            await _orderRepository.SaveChangesAsync();
+			order.OrderStatus = OrderStatus.OnHold;
+			order.OnHoldReason = param?.Reason;
+			order.UpdatedOn = DateTime.Now;
+			order.UpdatedBy = currentUser;
+			await _orderRepository.SaveChangesAsync();
 
-            var orderStatusChanged = new OrderChanged
-            {
-                OrderId = order.Id,
-                OldStatus = oldStatus,
-                NewStatus = order.OrderStatus,
-                Order = order,
-                UserId = currentUser.Id,
-                Note = "挂起订单"
-            };
-            await _mediator.Publish(orderStatusChanged);
+			var orderStatusChanged = new OrderChanged
+			{
+				OrderId = order.Id,
+				OldStatus = oldStatus,
+				NewStatus = order.OrderStatus,
+				Order = order,
+				UserId = currentUser.Id,
+				Note = "Pending order"
+			};
+			await _mediator.Publish(orderStatusChanged);
 
-            return Result.Ok();
-        }
+			return Result.Ok();
+		}
 
-        /// <summary>
-        /// 标记指定订单为已支付。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <returns>标记操作的结果。</returns>
-        [HttpPut("{id:int:min(1)}/payment")]
-        public async Task<Result> AdminPayment(int id)
-        {
-            var currentUser = await _workContext.GetCurrentOrThrowAsync();
-            var order = await _orderRepository.Query().Where(c => c.Id == id).FirstOrDefaultAsync();
-            if (order == null)
-                return Result.Fail("订单不存在");
+		[HttpPut("{id:int:min(1)}/payment")]
+		public async Task<Result> AdminPayment(int id)
+		{
+			var currentUser = await _workContext.GetCurrentOrThrowAsync();
+			var order = await _orderRepository.Query().Where(c => c.Id == id).FirstOrDefaultAsync();
+			if (order == null)
+				return Result.Fail("Order does not exist");
 
-            var orderSs = new OrderStatus[] { OrderStatus.New, OrderStatus.PendingPayment, OrderStatus.PaymentFailed };
-            if (!orderSs.Contains(order.OrderStatus))
-            {
-                return Result.Fail("当前订单状态不允许标记付款");
-            }
+			var orderSs = new OrderStatus[] { OrderStatus.New, OrderStatus.PendingPayment, OrderStatus.PaymentFailed };
+			if (!orderSs.Contains(order.OrderStatus))
+			{
+				return Result.Fail("The current order status does not allow marking payment");
+			}
 
-            await _orderService.PaymentReceived(new PaymentReceivedParam()
-            {
-                OrderId = order.Id,
-                Note = "标记付款"
-            });
+			await _orderService.PaymentReceived(new PaymentReceivedParam()
+			{
+				OrderId = order.Id,
+				Note = "Mark as paid"
+			});
 
-            return Result.Ok();
-        }
+			return Result.Ok();
+		}
 
-        /// <summary>
-        /// 分页获取订单列表。
-        /// </summary>
-        /// <param name="param">分页查询参数。</param>
-        /// <returns>分页的订单列表。</returns>
-        [HttpPost("grid")]
+		[HttpPost("grid")]
         public async Task<Result<StandardTableResult<OrderQueryResult>>> List([FromBody] StandardTableParam<OrderQueryParam> param)
         {
             var query = _orderRepository.Query();
@@ -688,52 +635,46 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 为指定订单创建发货记录。
-        /// </summary>
-        /// <param name="id">订单 ID。</param>
-        /// <param name="param">订单发货参数。</param>
-        /// <returns>创建发货记录操作的结果。</returns>
-        [HttpPost("{id:int:min(1)}/shipment")]
-        public async Task<Result> Post(int id, [FromBody] OrderShipmentParam param)
-        {
-            var currentUser = await _workContext.GetCurrentUserAsync();
-            var order = await _orderRepository.Query()
-                .Include(c => c.OrderItems).ThenInclude(c => c.Product)
-                .FirstOrDefaultAsync(c => c.Id == id);
-            if (order == null)
-                return Result.Fail("订单不存在");
-            if (order.OrderStatus != OrderStatus.Shipping && order.OrderStatus != OrderStatus.PaymentReceived)
-                return Result.Fail($"订单状态处于[{order.OrderStatus}]，不允许发货");
+		[HttpPost("{id:int:min(1)}/shipment")]
+		public async Task<Result> Post(int id, [FromBody] OrderShipmentParam param)
+		{
+			var currentUser = await _workContext.GetCurrentUserAsync();
+			var order = await _orderRepository.Query()
+			.Include(c => c.OrderItems).ThenInclude(c => c.Product)
+			.FirstOrDefaultAsync(c => c.Id == id);
+			if (order == null)
+				return Result.Fail("Order does not exist");
+			if (order.OrderStatus != OrderStatus.Shipping && order.OrderStatus != OrderStatus.PaymentReceived)
+				return Result.Fail($"Order status is [{order.OrderStatus}], shipment is not allowed");
 
-            switch (order.ShippingStatus)
-            {
-                case ShippingStatus.NoShipping:
-                    {
-                        //无物流
-                        order.OrderStatus = OrderStatus.Shipped;
-                        await _orderRepository.SaveChangesAsync();
-                        return Result.Ok();
-                    }
-                case null:
-                case ShippingStatus.NotYetShipped:
-                case ShippingStatus.PartiallyShipped:
-                    order.ShippingStatus = ShippingStatus.PartiallyShipped;
-                    break;
+			switch (order.ShippingStatus)
+			{
+				case ShippingStatus.NoShipping:
+					{
+						//No logistics
+						order.OrderStatus = OrderStatus.Shipped;
+						await _orderRepository.SaveChangesAsync();
+						return Result.Ok();
+					}
+				case null:
+				case ShippingStatus.NotYetShipped:
+				case ShippingStatus.PartiallyShipped:
+					order.ShippingStatus = ShippingStatus.PartiallyShipped;
+					break;
 
-                case ShippingStatus.Shipped:
-                    return Result.Fail($"订单已发货");
+				case ShippingStatus.Shipped:
+					return Result.Fail($"Order shipped");
 
-                case ShippingStatus.Delivered:
-                    return Result.Fail($"订单已收货");
+				case ShippingStatus.Delivered:
+					return Result.Fail($"Order received");
 
-                default:
-                    return Result.Fail($"配送状态异常");
-            }
-            if (order.OrderStatus == OrderStatus.PaymentReceived)
-                order.OrderStatus = OrderStatus.Shipping;
+				default:
+					return Result.Fail($"Delivery status abnormal");
+			}
+			if (order.OrderStatus == OrderStatus.PaymentReceived)
+				order.OrderStatus = OrderStatus.Shipping;
 
-            var shipment = new Shipment
+			var shipment = new Shipment
             {
                 TrackingNumber = param.TrackingNumber,
                 AdminComment = param.AdminComment,
@@ -753,17 +694,17 @@ namespace Shop.Module.Orders.Controllers
                     continue;
                 }
 
-                var orderItem = order.OrderItems.First(c => c.Id == item.OrderItemId);
-                if (orderItem.ShippedQuantity >= orderItem.Quantity)
-                {
-                    throw new Exception($"订单商品[{orderItem.Product.Name}]，已全部发货");
-                }
-                if (orderItem.ShippedQuantity + item.QuantityToShip > orderItem.Quantity)
-                {
-                    throw new Exception($"订单商品[{orderItem.Product.Name}]，发货数量不能>下单数量");
-                }
+				var orderItem = order.OrderItems.First(c => c.Id == item.OrderItemId);
+				if (orderItem.ShippedQuantity >= orderItem.Quantity)
+				{
+					throw new Exception($"Order Item [{orderItem.Product.Name}], all shipped");
+				}
+				if (orderItem.ShippedQuantity + item.QuantityToShip > orderItem.Quantity)
+				{
+					throw new Exception($"Order Item [{orderItem.Product.Name}], shipping quantity cannot be > order quantity");
+				}
 
-                var shipmentItem = new ShipmentItem
+				var shipmentItem = new ShipmentItem
                 {
                     Shipment = shipment,
                     Quantity = item.QuantityToShip,
@@ -780,7 +721,6 @@ namespace Shop.Module.Orders.Controllers
             {
                 var timeFromMin = await _appSettingService.Get<int>(OrderKeys.OrderAutoCompleteTimeForMinute);
 
-                //全部发货
                 order.ShippingStatus = ShippingStatus.Shipped;
                 order.OrderStatus = OrderStatus.Shipped;
                 order.ShippedOn = DateTime.Now;
@@ -799,53 +739,53 @@ namespace Shop.Module.Orders.Controllers
             return Result.Ok();
         }
 
-        private async Task<OrderAddress> UserAddressToOrderAddress(int userAddressId, int userId, AddressType addressType, Order order)
-        {
-            var userAddress = await _userAddressRepository.Query()
-                    .Include(c => c.Address)
-                    .Where(c => c.Id == userAddressId && c.UserId == userId && c.AddressType == addressType)
-                    .FirstOrDefaultAsync();
-            var shipping = userAddress ?? throw new Exception("配送地址不存在");
-            var orderAddress = new OrderAddress()
-            {
-                Order = order,
-                AddressType = shipping.AddressType,
-                AddressLine1 = shipping.Address.AddressLine1,
-                AddressLine2 = shipping.Address.AddressLine2,
-                City = shipping.Address.City,
-                Company = shipping.Address.Company,
-                ContactName = shipping.Address.ContactName,
-                CountryId = shipping.Address.CountryId,
-                Email = shipping.Address.Email,
-                Phone = shipping.Address.Phone,
-                StateOrProvinceId = shipping.Address.StateOrProvinceId,
-                ZipCode = shipping.Address.ZipCode
-            };
-            return orderAddress;
-        }
+		private async Task<OrderAddress> UserAddressToOrderAddress(int userAddressId, int userId, AddressType addressType, Order order)
+		{
+			var userAddress = await _userAddressRepository.Query()
+			.Include(c => c.Address)
+			.Where(c => c.Id == userAddressId && c.UserId == userId && c.AddressType == addressType)
+			.FirstOrDefaultAsync();
+			var shipping = userAddress ?? throw new Exception("Shipping address does not exist");
+			var orderAddress = new OrderAddress()
+			{
+				Order = order,
+				AddressType = shipping.AddressType,
+				AddressLine1 = shipping.Address.AddressLine1,
+				AddressLine2 = shipping.Address.AddressLine2,
+				City = shipping.Address.City,
+				Company = shipping.Address.Company,
+				ContactName = shipping.Address.ContactName,
+				CountryId = shipping.Address.CountryId,
+				Email = shipping.Address.Email,
+				Phone = shipping.Address.Phone,
+				StateOrProvinceId = shipping.Address.StateOrProvinceId,
+				ZipCode = shipping.Address.ZipCode
+			};
+			return orderAddress;
+		}
 
-        private async Task<OrderGetResult> GetOrder(int id, long no = 0)
-        {
-            var currentUser = await _workContext.GetCurrentUserAsync();
-            Order order = null;
-            var orderQuery = _orderRepository
-                .Query()
-                .Include(c => c.Customer)
-                .Include(c => c.BillingAddress)
-                .Include(c => c.ShippingAddress)
-                .Include(c => c.OrderItems);
-            if (id <= 0 && no <= 0)
-                throw new Exception("参数异常");
+		private async Task<OrderGetResult> GetOrder(int id, long no = 0)
+		{
+			var currentUser = await _workContext.GetCurrentUserAsync();
+			Order order = null;
+			var orderQuery = _orderRepository
+			.Query()
+			.Include(c => c.Customer)
+			.Include(c => c.BillingAddress)
+			.Include(c => c.ShippingAddress)
+			.Include(c => c.OrderItems);
+			if (id <= 0 && no <= 0)
+				throw new Exception("Parameter exception");
 
-            if (id > 0)
-                order = await orderQuery.Where(c => c.Id == id).FirstOrDefaultAsync();
-            else if (no > 0)
-                order = await orderQuery.Where(c => c.No == no).FirstOrDefaultAsync();
+			if (id > 0)
+				order = await orderQuery.Where(c => c.Id == id).FirstOrDefaultAsync();
+			else if (no > 0)
+				order = await orderQuery.Where(c => c.No == no).FirstOrDefaultAsync();
 
-            if (order == null)
-                throw new Exception("订单不存在");
+			if (order == null)
+				throw new Exception("Order does not exist");
 
-            var result = new OrderGetResult
+			var result = new OrderGetResult
             {
                 Id = order.Id,
                 No = order.No.ToString(),
@@ -943,121 +883,103 @@ namespace Shop.Module.Orders.Controllers
             return result;
         }
 
-        /// <summary>
-        /// 库增加/存减少规则
-        /// 当增加下单数量时减少库存
-        /// 当减少下单数量时增加库存
-        /// </summary>
-        /// <param name="stocks"></param>
-        /// <param name="product"></param>
-        /// <param name="quantity">减少或增加库存数量，减少库存负数，增加库存整数</param>
-        /// <param name="orderId"></param>
-        /// <param name="note"></param>
-        private void OrderStockDoWorker(IList<Stock> stocks, IList<StockHistory> addStockHistories, Product product, User user, int quantity, Order order, string note)
-        {
-            if (product?.StockTrackingIsEnabled != true || quantity == 0)
-                return;
+		private void OrderStockDoWorker(IList<Stock> stocks, IList<StockHistory> addStockHistories, Product product, User user, int quantity, Order order, string note)
+		{
+			if (product?.StockTrackingIsEnabled != true || quantity == 0)
+				return;
 
-            // 交易取消、交易完成的订单修改下单数量不修改库存
-            var notStockOrderStatus = new OrderStatus[] { OrderStatus.Canceled, OrderStatus.Complete };
-            if (order == null || notStockOrderStatus.Contains(order.OrderStatus))
-                return;
+			var notStockOrderStatus = new OrderStatus[] { OrderStatus.Canceled, OrderStatus.Complete };
+			if (order == null || notStockOrderStatus.Contains(order.OrderStatus))
+				return;
 
-            if (stocks.Count <= 0)
-                throw new Exception("商品库存不存在");
+			if (stocks.Count <= 0)
+				throw new Exception("Product inventory does not exist");
 
-            var productStocks = stocks.Where(c => c.ProductId == product.Id && c.IsEnabled);
-            if (productStocks.Count() <= 0)
-                throw new Exception($"商品：{product.Name}，无可用库存");
+			var productStocks = stocks.Where(c => c.ProductId == product.Id && c.IsEnabled);
+			if (productStocks.Count() <= 0)
+				throw new Exception($"Product: {product.Name}, no available stock");
 
-            switch (product.StockReduceStrategy)
-            {
-                case StockReduceStrategy.PlaceOrderWithhold:
-                    //下单减库存时，支持成功，不减少库存
-                    if (order.OrderStatus == OrderStatus.PaymentReceived)
-                        return;
-                    break;
+			switch (product.StockReduceStrategy)
+			{
+				case StockReduceStrategy.PlaceOrderWithhold:
+					if (order.OrderStatus == OrderStatus.PaymentReceived)
+						return;
+					break;
 
-                case StockReduceStrategy.PaymentSuccessDeduct:
-                    //支付减库存时，下单、待支付、支付失败，不减少库存
-                    var oss = new OrderStatus[] { OrderStatus.New, OrderStatus.PendingPayment, OrderStatus.PaymentFailed };
-                    if (oss.Contains(order.OrderStatus))
-                        return;
-                    break;
+				case StockReduceStrategy.PaymentSuccessDeduct:
+					var oss = new OrderStatus[] { OrderStatus.New, OrderStatus.PendingPayment, OrderStatus.PaymentFailed };
+					if (oss.Contains(order.OrderStatus))
+						return;
+					break;
 
-                default:
-                    throw new Exception("库存扣减策略不存在");
-            }
+				default:
+					throw new Exception("Inventory reduction strategy does not exist");
+			}
 
-            //分布式锁，重新获取库存
-            //todo
+			if (quantity < 0)
+			{
+				var absQuantity = Math.Abs(quantity);
+				if (productStocks.Sum(c => c.StockQuantity) < absQuantity)
+					throw new Exception($"Product [{product.Name}] is out of stock, remaining stock: {productStocks.Sum(c => c.StockQuantity)}");
+				do
+				{
+					var firstStock = productStocks.Where(c => c.StockQuantity > 0).OrderBy(c => c.DisplayOrder).FirstOrDefault();
+					if (firstStock == null)
+						throw new Exception($"Product [{product.Name}] is out of stock");
+					if (firstStock.StockQuantity >= absQuantity)
+					{
+						firstStock.StockQuantity = firstStock.StockQuantity - absQuantity;
+						if (firstStock.StockQuantity < 0)
+							throw new Exception($"Product [{product.Name}] is out of stock");
+						addStockHistories.Add(new StockHistory()
+						{
+							Note = $"Order: {order.No}, Item: {product.Name}, Reduced stock: {absQuantity}. Note: {note}",
+							CreatedBy = user,
+							UpdatedBy = user,
+							AdjustedQuantity = -absQuantity,
+							StockQuantity = firstStock.StockQuantity,
+							WarehouseId = firstStock.WarehouseId,
+							ProductId = product.Id
+						});
+						absQuantity = 0;
+					}
+					else
+					{
+						absQuantity = absQuantity - firstStock.StockQuantity;
+						if (absQuantity < 0)
+							throw new Exception($"Inventory deduction exception, please try again");
+						addStockHistories.Add(new StockHistory()
+						{
+							Note = $"Order: {order.No}, Item: {product.Name}, Reduced inventory: {absQuantity}. Note: {note}",
+							CreatedBy = user,
+							UpdatedBy = user,
+							AdjustedQuantity = -firstStock.StockQuantity,
+							StockQuantity = 0,
+							WarehouseId = firstStock.WarehouseId,
+							ProductId = product.Id
+						});
+						firstStock.StockQuantity = 0;
+					}
+				} while (absQuantity > 0);
+			}
+			else if (quantity > 0)
+			{
+				var firstStock = productStocks.OrderBy(c => c.DisplayOrder).FirstOrDefault();
+				if (firstStock == null)
+					throw new Exception($"Item: {product.Name}, no available stock");
+				firstStock.StockQuantity += quantity;
 
-            if (quantity < 0)
-            {
-                //减少库存
-                var absQuantity = Math.Abs(quantity);
-                if (productStocks.Sum(c => c.StockQuantity) < absQuantity)
-                    throw new Exception($"商品[{product.Name}]库存不足，库存剩余：{productStocks.Sum(c => c.StockQuantity)}");
-                do
-                {
-                    var firstStock = productStocks.Where(c => c.StockQuantity > 0).OrderBy(c => c.DisplayOrder).FirstOrDefault();
-                    if (firstStock == null)
-                        throw new Exception($"商品[{product.Name}]库存不足");
-                    if (firstStock.StockQuantity >= absQuantity)
-                    {
-                        firstStock.StockQuantity = firstStock.StockQuantity - absQuantity;
-                        if (firstStock.StockQuantity < 0)
-                            throw new Exception($"商品[{product.Name}]库存不足");
-                        addStockHistories.Add(new StockHistory()
-                        {
-                            Note = $"订单：{order.No}，商品：{product.Name}，减少库存：{absQuantity}。备注：{note}",
-                            CreatedBy = user,
-                            UpdatedBy = user,
-                            AdjustedQuantity = -absQuantity,
-                            StockQuantity = firstStock.StockQuantity,
-                            WarehouseId = firstStock.WarehouseId,
-                            ProductId = product.Id
-                        });
-                        absQuantity = 0;
-                    }
-                    else
-                    {
-                        absQuantity = absQuantity - firstStock.StockQuantity;
-                        if (absQuantity < 0)
-                            throw new Exception($"库存扣减异常，请重试");
-                        addStockHistories.Add(new StockHistory()
-                        {
-                            Note = $"订单：{order.No}，商品：{product.Name}，减少库存：{absQuantity}。备注：{note}",
-                            CreatedBy = user,
-                            UpdatedBy = user,
-                            AdjustedQuantity = -firstStock.StockQuantity,
-                            StockQuantity = 0,
-                            WarehouseId = firstStock.WarehouseId,
-                            ProductId = product.Id
-                        });
-                        firstStock.StockQuantity = 0;
-                    }
-                } while (absQuantity > 0);
-            }
-            else if (quantity > 0)
-            {
-                //增加库存
-                var firstStock = productStocks.OrderBy(c => c.DisplayOrder).FirstOrDefault();
-                if (firstStock == null)
-                    throw new Exception($"商品：{product.Name}，无可用库存");
-                firstStock.StockQuantity += quantity;
-
-                addStockHistories.Add(new StockHistory()
-                {
-                    Note = $"订单：{order.No}，商品：{product.Name}，增加库存（减少下单商品数量）：{quantity}。备注：{note}",
-                    CreatedBy = user,
-                    UpdatedBy = user,
-                    AdjustedQuantity = quantity,
-                    StockQuantity = firstStock.StockQuantity,
-                    WarehouseId = firstStock.WarehouseId,
-                    ProductId = product.Id
-                });
-            }
-        }
+				addStockHistories.Add(new StockHistory()
+				{
+					Note = $"Order: {order.No}, Item: {product.Name}, increase inventory (reduce the number of ordered items): {quantity}. Note: {note}",
+					CreatedBy = user,
+					UpdatedBy = user,
+					AdjustedQuantity = quantity,
+					StockQuantity = firstStock.StockQuantity,
+					WarehouseId = firstStock.WarehouseId,
+					ProductId = product.Id
+				});
+			}
+		}
     }
 }

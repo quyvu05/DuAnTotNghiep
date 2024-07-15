@@ -14,24 +14,12 @@ namespace Shop.Module.Orders.ViewModels
 
         public PaymentType PaymentType { get; set; } = PaymentType.OnlinePayment;
 
-        /// <summary>
-        /// 配送方式
-        /// </summary>
         public ShippingMethod ShippingMethod { get; set; } = ShippingMethod.Free;
 
-        /// <summary>
-        /// 配送/运费金额
-        /// </summary>
         public decimal ShippingFeeAmount { get; set; }
 
-        /// <summary>
-        /// 订单折扣总额（运费券、满减券等）
-        /// </summary>
         public decimal DiscountAmount { get; set; }
 
-        /// <summary>
-        /// 下单备注
-        /// </summary>
         [StringLength(450)]
         public string OrderNote { get; set; }
 

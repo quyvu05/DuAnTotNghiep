@@ -11,9 +11,6 @@ namespace Shop.Module.Orders.ViewModels
 
         public int Quantity { get; set; }
 
-        /// <summary>
-        /// 下单备注
-        /// </summary>
         [StringLength(450)]
         public string OrderNote { get; set; }
     }
