@@ -17,7 +17,7 @@ using Shop.Module.Orders.Entities;
 namespace Shop.Module.Catalog.Controllers
 {
     /// <summary>
-    /// 商品管理API控制器，负责商品的增删改查等管理操作。
+    /// The product management API controller is responsible for management operations such as adding, deleting, modifying, and querying products.
     /// </summary>
     [Authorize(Roles = "admin")]
     [Route("/api/products")]
@@ -59,10 +59,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 分页获取商品列表，支持通过商品名称、SKU等条件进行筛选。
+        /// Get the product list in pages, and support filtering by product name, SKU, etc.
         /// </summary>
-        /// <param name="param">包含分页和筛选参数的对象。</param>
-        /// <returns>返回分页的商品列表。</returns>
+        /// <param name="param">An object containing paging and filtering parameters.</param>
+        /// <returns>Returns a paginated list of products.</returns>
         [HttpPost("grid")]
         public async Task<Result<StandardTableResult<ProductQueryResult>>> List([FromBody] StandardTableParam<ProductQueryParam> param)
         {
@@ -105,7 +105,7 @@ namespace Shop.Module.Catalog.Controllers
 
                     if (search.IncludeSubCategories)
                     {
-                        //递归获取子分类
+                        //Recursively get subcategories
                         var all = await _categoryService.GetAll();
                         foreach (var id in search.CategoryIds)
                         {
@@ -140,10 +140,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 根据商品ID获取商品详细信息，包括商品媒体、属性、库存等信息。
+        /// Get detailed information about a product based on its ID, including product media, attributes, inventory, and other information.
         /// </summary>
-        /// <param name="id">商品ID。</param>
-        /// <returns>返回指定商品的详细信息。</returns>
+        /// <param name="id">The product ID.</param>
+        /// <returns>Returns detailed information about the specified product. </returns>
         [HttpGet("{id:int:min(1)}")]
         public async Task<Result<ProductGetResult>> Get(int id)
         {
@@ -160,7 +160,7 @@ namespace Shop.Module.Catalog.Controllers
                 .FirstOrDefault(x => x.Id == id);
 
             if (product == null)
-                throw new Exception("商品不存在");
+                throw new Exception("Product does not exist");
 
             var productIds = new List<int>() { id };
             productIds.AddRange(product.Childrens.Select(c => c.Id));
@@ -318,10 +318,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 添加新商品，支持设置商品的各种属性和关联信息。
+        /// Add new products and support setting various attributes and related information of the products.
         /// </summary>
-        /// <param name="param">包含商品创建信息的参数对象。</param>
-        /// <returns>返回操作结果。</returns>
+        /// <param name="param">A parameter object containing product creation information.</param>
+        /// <returns>Returns the result of the operation.</returns>
         [HttpPost]
         public async Task<Result> Add([FromBody] ProductCreateParam param)
         {
@@ -354,7 +354,7 @@ namespace Shop.Module.Catalog.Controllers
                 CreatedBy = currentUser,
                 UpdatedBy = currentUser,
                 ParentGroupedProductId = null,
-                IsVisibleIndividually = true, //新增产品时，必须可见
+                IsVisibleIndividually = true, //When adding a new product, it must be visible
                 HasOptions = param.Variations.Distinct().Any() ? true : false,
 
                 Barcode = param.Barcode,
@@ -450,7 +450,7 @@ namespace Shop.Module.Catalog.Controllers
                 InitStock(stocks, stockHistories, product, currentUser, param.Stocks);
             }
 
-            //商品选项组合
+            //Product option combinations
             var variations = param.Variations.Distinct();
             foreach (var variation in variations)
             {
@@ -481,9 +481,9 @@ namespace Shop.Module.Catalog.Controllers
                 foreach (var combination in coms)
                 {
                     if (!product.OptionValues.Any(c => c.OptionId == combination.OptionId))
-                        throw new Exception("商品组合中的选项不存在");
+                        throw new Exception("The option in the product combination does not exist");
                     if (!product.OptionValues.Any(c => c.Value == combination.Value))
-                        throw new Exception("商品组合中的选项值不存在");
+                        throw new Exception("The option value in the product combination does not exist");
                     if (product.OptionCombinations.Any(c => c.OptionId == combination.OptionId && c.Value == combination.Value))
                         continue;
 
@@ -520,11 +520,11 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 编辑指定ID的商品信息，支持修改商品的各种属性和关联信息。
+        /// Edit the product information of the specified ID and support modifying various attributes and related information of the product.
         /// </summary>
-        /// <param name="id">商品ID。</param>
-        /// <param name="param">包含商品更新信息的参数对象。</param>
-        /// <returns>返回操作结果。</returns>
+        /// <param name="id">The product ID.</param>
+        /// <param name="param">A parameter object containing product update information.</param>
+        /// <returns>Returns the result of the operation.</returns>
         [HttpPut("{id:int:min(1)}")]
         public async Task<Result> Edit(int id, [FromBody] ProductCreateParam param)
         {
@@ -542,7 +542,7 @@ namespace Shop.Module.Catalog.Controllers
                 .FirstOrDefault(x => x.Id == id);
 
             if (product == null)
-                return Result.Fail("商品不存在");
+                return Result.Fail("Product does not exist");
 
             var productIds = new List<int>() { id };
             productIds.AddRange(product.Childrens.Select(c => c.Id));
@@ -652,14 +652,14 @@ namespace Shop.Module.Catalog.Controllers
                 UpdateAndDeleteStock(productStocks, addStockHistories, product, currentUser, updateStockParams);
             }
 
-            //如果是编辑的商品组合（SKU），则不参与编辑选项
-            //如果是编辑的主商品，则参与编辑选项
+            //If it is a product combination (SKU) being edited, it will not be included in the editing options
+            //If it is the main item being edited, then it participates in the editing options
             if (product.ParentGroupedProductId == null && product.ParentProduct == null)
             {
                 product.HasOptions = param.Variations.Distinct().Any() ? true : false;
 
-                //商品选项
-                //暂时全部标识删除
+                //Product options
+                //Temporarily delete all logos
                 foreach (var ov in product.OptionValues)
                 {
                     ov.IsDeleted = true;
@@ -702,7 +702,7 @@ namespace Shop.Module.Catalog.Controllers
                     ov.UpdatedOn = DateTime.Now;
                 }
 
-                //商品选项组合
+                //Product option combinations
                 var variations = param.Variations.Distinct();
                 foreach (var variation in variations)
                 {
@@ -736,9 +736,9 @@ namespace Shop.Module.Catalog.Controllers
                         foreach (var combination in coms)
                         {
                             if (!product.OptionValues.Any(c => c.OptionId == combination.OptionId && !c.IsDeleted))
-                                throw new Exception("商品组合中的选项不存在");
+                                throw new Exception("The option in the product combination does not exist");
                             if (!product.OptionValues.Any(c => c.Value == combination.Value && !c.IsDeleted))
-                                throw new Exception("商品组合中的选项值不存在");
+                                throw new Exception("The option value in the product combination does not exist");
                             if (product.OptionCombinations.Any(c => c.OptionId == combination.OptionId && c.Value == combination.Value))
                                 continue;
 
@@ -802,7 +802,7 @@ namespace Shop.Module.Catalog.Controllers
                     chidren.UpdatedOn = DateTime.Now;
                 }
 
-                //如果是产品下架，则SKU全部下架
+                //If the product is removed from the shelves, all SKUs will be removed from the shelves
                 if (!product.IsPublished)
                 {
                     foreach (var item in product.Childrens.Where(c => c.IsDeleted == false && c.IsPublished))
@@ -814,7 +814,7 @@ namespace Shop.Module.Catalog.Controllers
             }
             else
             {
-                //SKU 可编辑单独可见字段
+                //SKU editable single visible field
                 product.IsVisibleIndividually = param.IsVisibleIndividually;
             }
 
@@ -913,10 +913,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 删除指定ID的商品，包括其关联的选项、属性、媒体等信息。
+        /// Delete the product with the specified ID, including its associated options, attributes, media, and other information.
         /// </summary>
-        /// <param name="id">商品ID。</param>
-        /// <returns>返回操作结果。</returns>
+        /// <param name="id">The product ID.</param>
+        /// <returns>Returns the result of the operation.</returns>
         [HttpDelete("{id:int:min(1)}")]
         public async Task<Result> Delete(int id)
         {
@@ -935,20 +935,20 @@ namespace Shop.Module.Catalog.Controllers
 
             if (product == null)
             {
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
             }
 
             var anyChild = await _productRepository.Query().AnyAsync(c => c.ParentGroupedProductId == product.Id);
             if (anyChild)
             {
-                return Result.Fail("当前商品存在商品组合，不允许删除");
+                return Result.Fail("The current product has a product combination, deletion is not allowed");
             }
 
-            //如果产品产生了订单，则暂时不允许删除产品
+            //If a product has generated an order, it is temporarily not allowed to delete the product
             var anyOrder = await _orderItemRepository.Query().AnyAsync(c => c.ProductId == product.Id);
             if (anyOrder)
             {
-                return Result.Fail("当前商品已被订购，暂不允许删除");
+                return Result.Fail("The current product has been ordered and cannot be deleted.");
             }
 
             foreach (var deletedOptionValue in product.OptionValues)
@@ -1011,10 +1011,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 发布指定ID的商品，使其在前台可见。
+        /// Publish the product with the specified ID and make it visible in the foreground.
         /// </summary>
-        /// <param name="id">商品ID。</param>
-        /// <returns>返回操作结果。</returns>
+        /// <param name="id">The product ID.</param>
+        /// <returns>Returns the result of the operation.</returns>
         [HttpPut("{id:int:min(1)}/publish")]
         public async Task<Result> Publish(int id)
         {
@@ -1024,14 +1024,14 @@ namespace Shop.Module.Catalog.Controllers
                 .FirstOrDefault(x => x.Id == id);
 
             if (product == null)
-                return Result.Fail("商品不存在");
+                return Result.Fail("Product does not exist");
 
             if (product.IsPublished)
                 return Result.Ok();
 
             if (product.ParentProduct != null && !product.ParentProduct.IsPublished)
             {
-                return Result.Fail("当前商品对应的父商品未发布，不允许操作");
+                return Result.Fail("The parent product corresponding to the current product has not been published, so the operation is not allowed.");
             }
 
             product.IsPublished = true;
@@ -1043,10 +1043,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 取消发布指定ID的商品，使其在前台不可见。
+        /// Unpublish the product with the specified ID, making it invisible on the frontend.
         /// </summary>
-        /// <param name="id">商品ID。</param>
-        /// <returns>返回操作结果。</returns>
+        /// <param name="id">The product ID.</param>
+        /// <returns>Returns the result of the operation.</returns>
         [HttpPut("{id:int:min(1)}/unpublish")]
         public async Task<Result> Unpublish(int id)
         {
@@ -1056,7 +1056,7 @@ namespace Shop.Module.Catalog.Controllers
                 .FirstOrDefault(x => x.Id == id);
 
             if (product == null)
-                return Result.Fail("商品不存在");
+                return Result.Fail("Product does not exist");
 
             if (!product.IsPublished)
                 return Result.Ok();
@@ -1075,11 +1075,11 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 克隆指定ID的商品，创建一个新的商品副本。
+        /// Clone the product with the specified ID and create a new copy of the product.
         /// </summary>
-        /// <param name="id">商品ID。</param>
-        /// <param name="model">包含克隆商品时可选参数的对象。</param>
-        /// <returns>返回操作结果，包括新克隆的商品ID。</returns>
+        /// <param name="id">The product ID.</param>
+        /// <param name="model">An object containing optional parameters when cloning an item.</param>
+        /// <returns>The operation result is returned, including the ID of the newly cloned product.</returns>
         [HttpPost("{id:int:min(1)}/clone")]
         public async Task<Result> Clone(int id, [FromBody] ProductCloneParam model)
         {
@@ -1094,7 +1094,7 @@ namespace Shop.Module.Catalog.Controllers
                 .FirstOrDefault(x => x.Id == id);
 
             if (product == null)
-                throw new Exception("商品不存在");
+                throw new Exception("Product does not exist");
 
             var newProduct = product.Clone();
             newProduct.Name = model.Name;
@@ -1117,7 +1117,7 @@ namespace Shop.Module.Catalog.Controllers
                 }
             }
 
-            //复制选项
+            //Copy Options
             foreach (var optionValue in product.OptionValues)
             {
                 newProduct.AddOptionValue(new ProductOptionValue
@@ -1131,7 +1131,7 @@ namespace Shop.Module.Catalog.Controllers
                 });
             }
 
-            //复制库存
+            //Copy Inventory
             var addStocks = new List<Stock>();
             var addStockHistories = new List<StockHistory>();
             if (model.IsCopyStock)
@@ -1197,7 +1197,7 @@ namespace Shop.Module.Catalog.Controllers
                     AdjustedQuantity = item.Quantity,
                     CreatedBy = user,
                     UpdatedBy = user,
-                    Note = "初始化商品库存"
+                    Note = "Initialize product inventory"
                 });
             }
         }
@@ -1210,11 +1210,11 @@ namespace Shop.Module.Catalog.Controllers
             foreach (var item in stockParams)
             {
                 if (item.Quantity < 0)
-                    throw new Exception("库存数量必须>=0");
+                    throw new Exception("Inventory quantity must>=0");
 
                 var ps = productStocks.FirstOrDefault(c => c.WarehouseId == item.Id);
                 if (ps == null)
-                    throw new Exception("产品库存不存在");
+                    throw new Exception("Product does not exist in stock");
 
                 if (ps.StockQuantity != item.Quantity)
                 {
@@ -1226,7 +1226,7 @@ namespace Shop.Module.Catalog.Controllers
                         AdjustedQuantity = item.Quantity - ps.StockQuantity,
                         CreatedBy = user,
                         UpdatedBy = user,
-                        Note = "修改商品库存"
+                        Note = "Modify product inventory"
                     });
                     ps.StockQuantity = item.Quantity;
                 }

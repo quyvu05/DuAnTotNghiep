@@ -1,7 +1,7 @@
 ﻿namespace Shop.Module.Catalog.Models
 {
     /// <summary>
-    /// 选项显示类型
+    /// Option Display Type
     /// </summary>
     public enum OptionDisplayType
     {

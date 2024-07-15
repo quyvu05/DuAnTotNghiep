@@ -76,7 +76,7 @@ namespace Shop.Module.Catalog.Services
                 {
                     var ids = new List<int>();
                     ids.Add(search.CategoryId.Value);
-                    //递归获取子分类
+                    //Recursively get subcategories
                     var all = await _categoryService.GetAll();
                     ids.AddRange(_categoryService.GetChildrens(search.CategoryId.Value, all).Select(c => c.Id));
                     var subQuery = from c in query
@@ -112,7 +112,7 @@ namespace Shop.Module.Catalog.Services
 
         public async Task<IList<GoodsListResult>> RelatedList(int id)
         {
-            // 推荐商品暂时随机取商品
+            // Recommended products are temporarily randomly selected
             var result = await _productRepository.Query()
                 .Include(x => x.ThumbnailImage)
                 .Where(c => c.IsPublished && c.IsAllowToOrder && c.IsVisibleIndividually)
@@ -164,7 +164,7 @@ namespace Shop.Module.Catalog.Services
         {
             _staticCacheManager.Remove(CatalogKeys.GoodsById + id);
 
-            // 清理子商品缓存时,同时清理父级商品缓存
+            // When clearing the child product cache, clear the parent product cache at the same time
             var parentId = await _productRepository.Query().Where(c => c.Id == id && c.ParentGroupedProductId > 0).Select(c => c.ParentGroupedProductId).FirstOrDefaultAsync();
             if (parentId.HasValue)
                 _staticCacheManager.Remove(CatalogKeys.GoodsById + parentId.Value);
@@ -174,7 +174,7 @@ namespace Shop.Module.Catalog.Services
         {
             var anyProduct = await _productRepository.Query().AnyAsync(c => c.Id == id && c.IsPublished);
             if (!anyProduct)
-                throw new Exception("商品不存在或商品已下架");
+                throw new Exception("The product does not exist or has been removed from the shelves");
 
             var product = await _productRepository.Query()
                 .Include(x => x.ThumbnailImage)
@@ -187,10 +187,10 @@ namespace Shop.Module.Catalog.Services
                 .Include(x => x.AttributeValues).ThenInclude(a => a.Attribute).ThenInclude(g => g.Group)
                 .Include(x => x.Categories)
                 .Include(x => x.ParentProduct)
-                .FirstOrDefaultAsync(x => x.Id == id && x.IsPublished); // 子商品必须已发布 && x.Childrens.Any(c => c.IsPublished) 这样查询是错误的
+                .FirstOrDefaultAsync(x => x.Id == id && x.IsPublished); // The child product must be published && x.Childrens.Any(c => c.IsPublished) This query is wrong
 
             if (product == null)
-                throw new Exception("商品不存在或商品已下架");
+                throw new Exception("The product does not exist or has been removed from the shelves");
 
             var productVm = new GoodsGetResult
             {
@@ -245,7 +245,7 @@ namespace Shop.Module.Catalog.Services
                     MediaUrl = productMedia.Media.Url
                 });
             }
-            // 添加主图
+            // Add a main image
             if (product.ThumbnailImage != null && product.ThumbnailImageId.HasValue)
             {
                 var first = productVm.ProductImages.FirstOrDefault(c => c.MediaId == product.ThumbnailImageId.Value);
@@ -284,7 +284,7 @@ namespace Shop.Module.Catalog.Services
                 productVm.Options.Add(result);
             }
 
-            // 子商品必须已发布 过滤方法待优化
+            // Sub-items must be published. Filtering method needs to be optimized.
             productVm.Variations = product.Childrens.Where(c => c.IsPublished).Select(x =>
             new ProductGetVariationResult
             {
@@ -325,7 +325,7 @@ namespace Shop.Module.Catalog.Services
         {
             var anyProduct = await _productRepository.Query().AnyAsync(c => c.Id == id && c.IsPublished);
             if (!anyProduct)
-                throw new Exception("产品不存在或产品已下架");
+                throw new Exception("The product does not exist or has been removed from the shelves");
 
             var product = await _productRepository.Query()
                 .Include(x => x.OptionCombinations)
@@ -333,7 +333,7 @@ namespace Shop.Module.Catalog.Services
                 .FirstOrDefaultAsync(x => x.Id == id && x.IsPublished);
 
             if (product == null)
-                throw new Exception("产品不存在或产品已下架");
+                throw new Exception("The product does not exist or has been removed from the shelves");
 
             var productIds = new List<int>() { id };
             productIds.AddRange(product.Childrens.Select(c => c.Id));
@@ -391,7 +391,7 @@ namespace Shop.Module.Catalog.Services
                     {
                         if (!c.DisplayStockQuantity)
                         {
-                            c.StockQuantity = 0; // 不显示库存量
+                            c.StockQuantity = 0; // Do not display inventory
                         }
                     }
                 }

@@ -45,7 +45,7 @@ namespace Shop.Module.ApiProfilerAuth
                         Authorization = new[] { new BasicAuthAuthorizationFilter(filterOptions) }
                     };
 
-                    // 必须在需要控制的中间件之前执行
+                    // Must be executed before the middleware that needs to be controlled
                     app.UseWhen(context => context.Request.Path.StartsWithSegments(new PathString(miniOpts.Value.RouteBasePath)),
                         x => x.UseMiddleware<AspNetCoreDashboardMiddleware>(options));
                 }

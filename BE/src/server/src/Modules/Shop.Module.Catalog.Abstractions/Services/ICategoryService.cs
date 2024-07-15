@@ -8,82 +8,82 @@ using System.Threading.Tasks;
 namespace Shop.Module.Catalog.Services
 {
     /// <summary>
-    /// 定义处理商品分类相关操作的服务接口。
+    /// Define the service interface for processing product classification related operations.
     /// </summary>
     public interface ICategoryService
     {
         /// <summary>
-        /// 获取所有分类。
+        /// Get all categories.
         /// </summary>
         /// <returns>分类列表。</returns>
         Task<IList<CategoryResult>> GetAll();
 
         /// <summary>
-        /// 通过缓存获取所有分类。
+        /// Get all categories from cache.
         /// </summary>
-        /// <returns>分类列表。</returns>
+        /// <returns>Category List </returns>
         Task<IList<Category>> GetAllByCache();
 
         /// <summary>
-        /// 清除分类相关的缓存。
+        /// Clear category-related cache.
         /// </summary>
         Task ClearCache();
 
         /// <summary>
-        /// 创建新的分类。
+        /// Create New Category
         /// </summary>
-        /// <param name="category">要创建的分类实体。</param>
+        /// <param name="category">The classification entity to create.</param>
         Task Create(Category category);
 
         /// <summary>
-        /// 更新已存在的分类。
+        /// Update an existing category.
         /// </summary>
-        /// <param name="category">要更新的分类实体。</param>
+        /// <param name="category">The classification entity to update.</param>
         Task Update(Category category);
 
         /// <summary>
-        /// 删除指定的分类。
+        /// Delete the specified category.
         /// </summary>
-        /// <param name="category">要删除的分类实体。</param>
+        /// <param name="category">The classification entity to delete.</param>
         Task Delete(Category category);
 
         /// <summary>
-        /// 获取分类列表，支持分页和搜索。
+        /// Get a list of categories, supporting paging and searching.
         /// </summary>
-        /// <param name="param">分页和搜索参数。</param>
-        /// <returns>符合条件的分类列表。</returns>
+        /// <param name="param">Pagination and search parameters. </param>
+        /// <returns>List of categories that meet the criteria. </returns>
         Task<Result<StandardTableResult<CategoryResult>>> List(StandardTableParam param);
 
         /// <summary>
-        /// 切换分类在菜单中的显示状态。
+        /// Toggles display of categories in the menu.
         /// </summary>
-        /// <param name="id">分类的ID。</param>
+        /// <param name="id">The ID of the category.</param>
         Task SwitchInMenu(int id);
 
         /// <summary>
-        /// 获取指定父分类下的所有子分类。
+        /// Get all subcategories under the specified parent category.
         /// </summary>
-        /// <param name="parentId">父分类的ID。</param>
-        /// <param name="all">所有可用的分类列表。</param>
-        /// <returns>子分类列表。</returns>
+        /// <param name="parentId">The ID of the parent category.</param>
+        /// <param name="all">List of all available categories.</param>
+        /// <returns>List of subcategories.</returns>
         IList<CategoryResult> GetChildrens(int parentId, IList<CategoryResult> all);
 
         /// <summary>
-        /// 获取一级分类和对应的二级子分类。
+        /// Get the first-level category and the corresponding second-level sub-category.
         /// </summary>
-        /// <param name="parentId">父分类的ID。如果为 null，则获取顶级分类及其子分类。</param>
-        /// <param name="isPublished">是否只获取已发布的分类。</param>
-        /// <param name="includeInMenu">是否只获取包含在菜单中的分类。</param>
-        /// <returns>分类列表。</returns>
+        /// <param name="parentId">The ID of the parent category. If null, get the top-level category and its subcategories.</param>
+        /// <param name="isPublished">Whether to only get published categories. </param>
+        /// <param name="includeInMenu">Whether to only get the categories included in the menu. </param>
+        /// <returns>Category List. </returns>
         Task<IList<CategoryTwoSubResult>> GetTwoSubCategories(int? parentId = null, bool isPublished = true, bool includeInMenu = true);
 
         /// <summary>
-        /// 仅获取指定父分类的二级子分类。
+        /// Get only the second-level subcategories of the specified parent category.
         /// </summary>
-        /// <param name="parentId">父分类的ID。如果为 null，则获取顶级分类的二级子分类。</param>
-        /// <param name="isPublished">是否只获取已发布的分类。</param>
-        /// <param name="includeInMenu">是否只获取包含在菜单中的分类。</param>
-        /// <returns>分类列表。</returns>
+        /// <param name="parentId">The ID of the parent category. If it is null, get the second-level subcategories of the top-level category.</param>
+        /// <param name="isPublished">Whether to only get published categories.</param>
+        /// <param name="includeInMenu">Whether to only get categories included in the menu.</param>
+        /// <returns>Category List. </returns>
         Task<IList<CategoryTwoSubResult>> GetTwoOnlyCategories(int? parentId = null, bool isPublished = true, bool includeInMenu = true);
     }
 }

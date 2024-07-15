@@ -3,12 +3,12 @@
     public class ApiProfilerAuthOptions
     {
         /// <summary>
-        /// 用户名
+        /// Username
         /// </summary>
         public string Username { get; set; }
 
         /// <summary>
-        /// 密码
+        /// Password
         /// </summary>
         public string Password { get; set; }
     }
