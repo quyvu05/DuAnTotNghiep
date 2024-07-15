@@ -139,6 +139,83 @@ namespace Shop.Module.Catalog.Controllers
 			return Result.Ok(gridData);
 		}
 
+		[HttpPost("list-product")]
+		[AllowAnonymous]
+		public async Task<Result<StandardTableResult<ProductQueryResult>>> ListProduct([FromBody] StandardTableParam<ProductQueryParam> param)
+		{
+			var query = _productRepository.Query();
+			var search = param.Search;
+			if (search != null)
+			{
+				if (!string.IsNullOrWhiteSpace(search.Name))
+				{
+					query = query.Where(c => c.Name.Contains(search.Name.Trim()));
+				}
+				if (!string.IsNullOrWhiteSpace(search.Sku))
+				{
+					query = query.Where(c => c.Sku.Contains(search.Sku.Trim()));
+				}
+				if (search.HasOptions != null)
+				{
+					query = query.Where(c => c.HasOptions == search.HasOptions.Value);
+				}
+				if (search.IsAllowToOrder != null)
+				{
+					query = query.Where(c => c.IsAllowToOrder == search.IsAllowToOrder.Value);
+				}
+				if (search.IsFeatured != null)
+				{
+					query = query.Where(c => c.IsFeatured == search.IsFeatured.Value);
+				}
+				if (search.IsPublished != null)
+				{
+					query = query.Where(c => c.IsPublished == search.IsPublished.Value);
+				}
+				if (search.IsVisibleIndividually != null)
+				{
+					query = query.Where(c => c.IsVisibleIndividually == search.IsVisibleIndividually.Value);
+				}
+				if (search.CategoryIds.Count > 0)
+				{
+					var ids = new List<int>();
+					ids.AddRange(search.CategoryIds);
+
+					if (search.IncludeSubCategories)
+					{
+						//Recursively get subcategories
+						var all = await _categoryService.GetAll();
+						foreach (var id in search.CategoryIds)
+						{
+							ids.AddRange(_categoryService.GetChildrens(id, all).Select(c => c.Id));
+						}
+					}
+					var subQuery = from c in query
+								   join b in _productCategoryRepository.Query() on c.Id equals b.ProductId
+								   where ids.Distinct().Contains(b.CategoryId)
+								   select c.Id;
+					query = query.Where(c => subQuery.Distinct().Contains(c.Id));
+				}
+			}
+			var gridData = await query
+				//.Include(x => x.Stock)
+				.ToStandardTableResult(param, x => new ProductQueryResult
+				{
+					Id = x.Id,
+					Name = x.Name,
+					HasOptions = x.HasOptions,
+					IsVisibleIndividually = x.IsVisibleIndividually,
+					IsFeatured = x.IsFeatured,
+					IsAllowToOrder = x.IsAllowToOrder,
+					IsCallForPricing = x.IsCallForPricing,
+					//StockQuantity = x.Stock.StockQuantity,
+					CreatedOn = x.CreatedOn,
+					IsPublished = x.IsPublished,
+					Price = x.Price,
+					MediaUrl = x.ThumbnailImage != null ? x.ThumbnailImage.Url : null
+				});
+			return Result.Ok(gridData);
+		}
+
 		/// <summary>
 		/// Get detailed information about the product based on the product ID, including product media, attributes, inventory and other information.
 		/// </summary>
