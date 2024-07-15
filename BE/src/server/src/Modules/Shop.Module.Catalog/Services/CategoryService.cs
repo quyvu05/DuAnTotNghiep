@@ -190,7 +190,7 @@ namespace Shop.Module.Catalog.Services
         }
 
         /// <summary>
-        /// 获取一级分类和对应子分类
+        /// Get the first-level category and corresponding sub-category
         /// </summary>
         /// <returns></returns>
         public async Task<IList<CategoryTwoSubResult>> GetTwoSubCategories(int? parentId = null, bool isPublished = true, bool includeInMenu = true)
@@ -233,7 +233,7 @@ namespace Shop.Module.Catalog.Services
         }
 
         /// <summary>
-        /// 仅获取二级分类
+        /// Get only the second level classification
         /// </summary>
         /// <returns></returns>
         public async Task<IList<CategoryTwoSubResult>> GetTwoOnlyCategories(int? parentId = null, bool isPublished = true, bool includeInMenu = true)

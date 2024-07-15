@@ -1,11 +1,11 @@
 ﻿namespace Shop.Module.Catalog.Models
 {
     /// <summary>
-    /// 发布/上架类型
+    /// Release/listing type
     /// </summary>
     public enum PublishType
     {
-        Now = 0, //立即上架
-        Timing = 1 //定时上架
+        Now = 0, //Available now
+        Timing = 1 //Scheduled listing
     }
 }

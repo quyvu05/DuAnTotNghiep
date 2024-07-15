@@ -13,7 +13,7 @@ using Shop.Module.Core.Services;
 namespace Shop.Module.Catalog.Controllers
 {
     /// <summary>
-    /// 管理后台控制器用于处理小部件产品相关操作的 API 请求。
+    /// The management backend controller is used to handle API requests for widget product related operations.
     /// </summary>
     [Authorize(Roles = "admin")]
     [Route("api/widget-products")]
@@ -34,16 +34,16 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 根据指定的小部件实例 ID 获取小部件产品信息。
+        /// Gets widget product information based on the specified widget instance ID.
         /// </summary>
-        /// <param name="id">小部件实例 ID。</param>
-        /// <returns>表示操作结果的 <see cref="Result"/> 对象。</returns>
+        /// <param name="id">Widget instance ID.</param>
+        /// <returns>Indicates the result of the operation<see cref="Result"/> Object.</returns>
         [HttpGet("{id}")]
         public async Task<Result> Get(int id)
         {
             var widgetInstance = await _widgetInstanceRepository.Query().FirstOrDefaultAsync(x => x.Id == id);
             if (widgetInstance == null)
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
             var model = new WidgetProductResult
             {
                 Id = widgetInstance.Id,
@@ -59,10 +59,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 创建一个新的小部件产品。
+        /// Create a new widget product.
         /// </summary>
-        /// <param name="model">要创建的小部件产品参数。</param>
-        /// <returns>表示操作结果的 <see cref="Result"/> 对象。</returns>
+        /// <param name="model">The widget product parameters to create.</param>
+        /// <returns>Indicates the result of the operation<see cref="Result"/> Object.</returns>
         [HttpPost]
         public async Task<Result> Post([FromBody] WidgetProductParam model)
         {
@@ -82,17 +82,17 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 更新指定 ID 的小部件产品信息。
+        /// Updates the product information of the widget with the specified ID.
         /// </summary>
-        /// <param name="id">小部件实例 ID。</param>
-        /// <param name="model">更新后的小部件产品参数。</param>
-        /// <returns>表示操作结果的 <see cref="Result"/> 对象。</returns>
+        /// <param name="id">Widget instance ID.</param>
+        /// <param name="model">Updated widget product parameters.</param>
+        /// <returns>Indicates the result of the operation<see cref="Result"/> Object.</returns>
         [HttpPut("{id}")]
         public async Task<Result> Put(int id, [FromBody] WidgetProductParam model)
         {
             var widgetInstance = _widgetInstanceRepository.Query().FirstOrDefault(x => x.Id == id);
             if (widgetInstance == null)
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
             widgetInstance.Name = model.Name;
             widgetInstance.WidgetZoneId = model.WidgetZoneId;
             widgetInstance.PublishStart = model.PublishStart;

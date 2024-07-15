@@ -7,7 +7,7 @@
         public decimal? OldPrice { get; set; }
 
         /// <summary>
-        /// 优惠
+        /// Discount
         /// </summary>
         public int PercentOfSaving { get; set; }
     }

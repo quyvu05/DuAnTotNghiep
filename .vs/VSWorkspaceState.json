@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\BE",
+    "\\BE\\src",
+    "\\BE\\src\\server",
+    "\\BE\\src\\server\\src",
+    "\\BE\\src\\server\\src\\Modules",
+    "\\BE\\src\\server\\src\\Modules\\Shop.Module.Catalog",
+    "\\BE\\src\\server\\src\\Modules\\Shop.Module.Catalog\\Controllers",
+    "\\BE\\src\\server\\src\\Modules\\Shop.Module.Catalog\\Handlers",
+    "\\BE\\src\\server\\src\\Modules\\Shop.Module.Catalog\\Services"
+  ],
+  "SelectedNode": "\\BE\\src\\server\\src\\Modules\\Shop.Module.Catalog",
+  "PreviewInSolutionExplorer": false
+}

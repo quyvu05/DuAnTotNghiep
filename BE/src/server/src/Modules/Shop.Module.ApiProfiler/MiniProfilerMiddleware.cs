@@ -246,7 +246,7 @@ namespace Shop.Module.ApiProfiler
         }
 
         /// <summary>
-        /// 统计首页
+        /// Statistics Home Page
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -304,7 +304,7 @@ namespace Shop.Module.ApiProfiler
         }
 
         /// <summary>
-        /// 统计列表
+        /// Statistics list
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

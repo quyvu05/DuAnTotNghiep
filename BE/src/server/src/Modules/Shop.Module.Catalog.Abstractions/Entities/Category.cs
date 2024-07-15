@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Shop.Module.Catalog.Entities
 {
     /// <summary>
-    /// 分类
+    /// Classification
     /// </summary>
     public class Category : EntityBase
     {

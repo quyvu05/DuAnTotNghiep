@@ -97,19 +97,19 @@ namespace Shop.Module.Catalog.Entities
         public Brand Brand { get; set; }
 
         /// <summary>
-        /// 商品条形码
+        /// Product barcode
         /// </summary>
         public string Barcode { get; set; }
 
         /// <summary>
-        /// 商品有效期。单位:天。自发布/上架时间起计算，如果过期，则自动取消发布/下架。发布时，计算下架时间。
-        /// 可提供功能，到期/即将到期时自动发布/上架用以重新计算上架/下架时间。
+        /// Product validity period. Unit: Days. Calculated from the time of release/listing. If expired, it will be automatically unpublished/removed. When released, the removal time is calculated.
+        /// A function can be provided to automatically publish/list items when they are due/about to expire in order to recalculate the listing/delisting time.
         /// </summary>
         public int? ValidThru { get; set; }
 
 
         ///// <summary>
-        ///// 默认仓库
+        ///// Default warehouse
         ///// </summary>
         //public int? DefaultWarehouseId { get; set; }
 
@@ -141,7 +141,7 @@ namespace Shop.Module.Catalog.Entities
         public bool DisplayStockQuantity { get; set; }
 
         /// <summary>
-        /// 库存扣减策略，总共有2种：下单减库存(place_order_withhold)和支付减库存(payment_success_deduct)。
+        /// There are two types of inventory deduction strategies: place_order_withhold and payment_success_deduct.
         /// </summary>
         public StockReduceStrategy StockReduceStrategy { get; set; }
 
@@ -161,7 +161,7 @@ namespace Shop.Module.Catalog.Entities
         public DateTime? UnpublishedOn { get; set; }
 
         /// <summary>
-        /// 取消发布原因
+        /// Unpublish reason
         /// </summary>
         public string UnpublishedReason { get; set; }
 
@@ -201,12 +201,12 @@ namespace Shop.Module.Catalog.Entities
         public decimal AdditionalShippingCharge { get; set; }
 
         /// <summary>
-        /// 运费模版Id
+        /// Shipping template ID
         /// </summary>
         public int? FreightTemplateId { get; set; }
 
         /// <summary>
-        /// 运费模板
+        /// Shipping template
         /// </summary>
         public FreightTemplate FreightTemplate { get; set; }
 
@@ -215,12 +215,12 @@ namespace Shop.Module.Catalog.Entities
         public Unit Unit { get; set; }
 
         /// <summary>
-        /// 管理员备注
+        /// Administrator Notes
         /// </summary>
         public string AdminRemark { get; set; }
 
         /// <summary>
-        /// 备货期。取值范围:1-60;单位:天。
+        /// Stocking period. Value range: 1-60; unit: day.
         /// </summary>
         public int? DeliveryTime { get; set; }
 
@@ -359,7 +359,7 @@ namespace Shop.Module.Catalog.Entities
             product.Width = Width;
             product.UnitId = UnitId;
 
-            //不赋值字段
+            //Unassigned fields
             //IsVisibleIndividually
 
             foreach (var attribute in AttributeValues)

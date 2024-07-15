@@ -10,7 +10,7 @@ using Shop.Module.Catalog.ViewModels;
 namespace Shop.Module.Catalog.Controllers
 {
     /// <summary>
-    /// 产品选项API控制器，负责管理产品选项的相关操作。
+    /// Product options API controller, responsible for managing product options related operations.
     /// </summary>
     [Authorize(Roles = "admin")]
     [Route("/api/product-options")]
@@ -28,9 +28,9 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 获取所有未被删除的产品选项。
+        /// Get all but deleted product options.
         /// </summary>
-        /// <returns>产品选项列表。</returns>
+        /// <returns>List of product options.</returns>
         [HttpGet]
         public async Task<Result> Get()
         {
@@ -39,10 +39,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 根据分页参数获取产品选项的分页列表。
+        /// Get a paginated list of product options based on pagination parameters.
         /// </summary>
-        /// <param name="param">分页和筛选参数。</param>
-        /// <returns>分页的产品选项列表。</returns>
+        /// <param name="param">Pagination and filtering parameters.</param>
+        /// <returns>Paginated list of product options.</returns>
         [HttpPost("grid")]
         public async Task<Result<StandardTableResult<ProductOptionResult>>> DataList([FromBody] StandardTableParam param)
         {
@@ -58,16 +58,16 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 根据产品选项ID获取单个产品选项的详细信息。
+        /// Get the details of a single product option based on the product option ID.
         /// </summary>
-        /// <param name="id">产品选项ID。</param>
-        /// <returns>指定的产品选项详情。</returns>
+        /// <param name="id">Product option ID.</param>
+        /// <returns>Details of the specified product option.</returns>
         [HttpGet("{id:int:min(1)}")]
         public async Task<Result> Get(int id)
         {
             var productOption = await _productOptionRepository.FirstOrDefaultAsync(id);
             if (productOption == null)
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
             var model = new ProductOptionResult
             {
                 Id = productOption.Id,
@@ -78,10 +78,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 添加一个新的产品选项。
+        /// Add a new product option.
         /// </summary>
-        /// <param name="model">产品选项数据。</param>
-        /// <returns>操作结果。</returns>
+        /// <param name="model">Product option data.</param>
+        /// <returns>Operation result.</returns>
         [HttpPost]
         public async Task<Result> Post([FromBody] ProductOptionParam model)
         {
@@ -96,17 +96,17 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 更新指定ID的产品选项。
+        /// Updates the product option with the specified ID.
         /// </summary>
-        /// <param name="id">产品选项ID。</param>
-        /// <param name="model">更新的产品选项数据。</param>
-        /// <returns>操作结果。</returns>
+        /// <param name="id">Product option ID.</param>
+        /// <param name="model">Updated product option data.</param>
+        /// <returns>Operation result.</returns>
         [HttpPut("{id:int:min(1)}")]
         public async Task<Result> Put(int id, [FromBody] ProductOptionParam model)
         {
             var productOption = await _productOptionRepository.FirstOrDefaultAsync(id);
             if (productOption == null)
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
             productOption.Name = model.Name;
             productOption.DisplayType = model.DisplayType;
             productOption.UpdatedOn = DateTime.Now;
@@ -115,21 +115,21 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 删除指定ID的产品选项。
+        /// Deletes the product option with the specified ID.
         /// </summary>
-        /// <param name="id">产品选项ID。</param>
-        /// <returns>操作结果。</returns>
+        /// <param name="id">Product option ID.</param>
+        /// <returns>Operation result.</returns>
         [HttpDelete("{id:int:min(1)}")]
         public async Task<Result> Delete(int id)
         {
             var productOption = await _productOptionRepository.FirstOrDefaultAsync(id);
             if (productOption == null)
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
 
             var any = _productOptionDataRepository.Query().Any(c => c.OptionId == id);
             if (any)
             {
-                return Result.Fail("请确保选项未被值数据引用");
+                return Result.Fail("Please make sure that the option is not referenced by value data");
             }
 
             productOption.IsDeleted = true;
@@ -139,10 +139,10 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 获取指定产品选项ID的所有选项数据。
+        /// Get all option data for the specified product option ID.
         /// </summary>
-        /// <param name="optionId">产品选项ID。</param>
-        /// <returns>产品选项数据列表。</returns>
+        /// <param name="optionId">Product option ID.</param>
+        /// <returns>List of product option data.</returns>
         [HttpGet("data/{optionId:int:min(1)}")]
         public async Task<Result<List<ProductOptionDataListResult>>> DataList(int optionId)
         {
@@ -165,11 +165,11 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 根据分页参数和产品选项ID获取产品选项数据的分页列表。
+        /// Get a paginated list of product option data based on pagination parameters and product option IDs.
         /// </summary>
-        /// <param name="optionId">产品选项ID。</param>
-        /// <param name="param">分页和筛选参数。</param>
-        /// <returns>分页的产品选项数据列表。</returns>
+        /// <param name="optionId">Product option ID.</param>
+        /// <param name="param">Pagination and filtering parameters.</param>
+        /// <returns>Paginated list of product options data.</returns>
         [HttpPost("data/{optionId:int:min(1)}/grid")]
         public async Task<Result<StandardTableResult<ProductOptionDataListResult>>> DataList(int optionId, [FromBody] StandardTableParam<ValueParam> param)
         {
@@ -200,11 +200,11 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 向指定的产品选项添加新的选项数据。
+        /// Adds new option data to the specified product option.
         /// </summary>
-        /// <param name="optionId">产品选项ID。</param>
-        /// <param name="model">选项数据。</param>
-        /// <returns>操作结果。</returns>
+        /// <param name="optionId">Product option ID.</param>
+        /// <param name="model">Option data.</param>
+        /// <returns>Operation result.</returns>
         [HttpPost("data/{optionId:int:min(1)}")]
         public async Task<Result> AddData(int optionId, [FromBody] ProductOptionDataParam model)
         {
@@ -222,18 +222,18 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 更新指定ID的产品选项数据。
+        /// Updates the product option data with the specified ID.
         /// </summary>
-        /// <param name="id">产品选项数据ID。</param>
-        /// <param name="model">更新的产品选项数据。</param>
-        /// <returns>操作结果。</returns>
+        /// <param name="id">Product option data ID.</param>
+        /// <param name="model">Updated product option data.</param>
+        /// <returns>Operation result.</returns>
         [HttpPut("data/{id:int:min(1)}")]
         public async Task<Result> EditData(int id, [FromBody] ProductOptionDataParam model)
         {
             var data = await _productOptionDataRepository.FirstOrDefaultAsync(id);
             if (data == null)
             {
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
             }
             data.IsPublished = model.IsPublished;
             data.Value = model.Value;
@@ -245,17 +245,17 @@ namespace Shop.Module.Catalog.Controllers
         }
 
         /// <summary>
-        /// 删除指定ID的产品选项数据。
+        /// Deletes the product option data with the specified ID.
         /// </summary>
-        /// <param name="id">产品选项数据ID。</param>
-        /// <returns>操作结果。</returns>
+        /// <param name="id">Product option data ID.</param>
+        /// <returns>Operation result.</returns>
         [HttpDelete("data/{id:int:min(1)}")]
         public async Task<Result> DeleteData(int id)
         {
             var data = await _productOptionDataRepository.FirstOrDefaultAsync(id);
             if (data == null)
             {
-                return Result.Fail("单据不存在");
+                return Result.Fail("The document does not exist");
             }
             data.IsDeleted = true;
             data.UpdatedOn = DateTime.Now;
