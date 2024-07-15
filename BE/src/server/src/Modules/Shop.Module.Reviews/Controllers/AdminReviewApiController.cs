@@ -33,11 +33,7 @@ namespace Shop.Module.Reviews.Controllers
             _workContext = workContext;
         }
 
-        /// <summary>
-        /// 分页获取评论列表。
-        /// </summary>
-        /// <param name="param">分页参数以及过滤条件。</param>
-        /// <returns>基于条件过滤后的评论分页列表。</returns>
+
         [HttpPost("grid")]
         public async Task<Result<StandardTableResult<AdminReviewListResult>>> Grid([FromBody] StandardTableParam<AdminReviewQueryParam> param)
         {
@@ -48,7 +44,7 @@ namespace Shop.Module.Reviews.Controllers
                 if (search.EntityTypeId.HasValue)
                 {
                     if (!entityTypeIds.Any(c => c == search.EntityTypeId.Value))
-                        throw new Exception("参数不支持");
+                        throw new Exception("The parameter is not supported");
                     query = query.Where(c => c.EntityTypeId == (int)search.EntityTypeId.Value);
                 }
 
@@ -101,12 +97,7 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 更新指定评论的状态。
-        /// </summary>
-        /// <param name="id">评论 ID。</param>
-        /// <param name="param">评论更新参数。</param>
-        /// <returns>更新操作的结果。</returns>
+
         [HttpPut("{id}")]
         public async Task<Result> Put(int id, [FromBody] AdminReviewUpdateParam param)
         {
@@ -121,11 +112,7 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 删除指定的评论。
-        /// </summary>
-        /// <param name="id">评论 ID。</param>
-        /// <returns>删除操作的结果。</returns>
+ 
         [HttpDelete("{id}")]
         public async Task<Result> Delete(int id)
         {

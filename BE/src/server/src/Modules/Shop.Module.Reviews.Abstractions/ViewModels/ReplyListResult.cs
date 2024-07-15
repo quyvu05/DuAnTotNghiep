@@ -19,9 +19,7 @@ namespace Shop.Module.Reviews.ViewModels
 
         public string CreatedOnForDate { get { return CreatedOn.ToString("yyyy-MM-dd"); } }
 
-        /// <summary>
-        /// 当前用户回复的用户
-        /// </summary>
+
         public string ToUserName { get; set; }
 
         public IEnumerable<ReplyListResult> Replies { get; set; } = new List<ReplyListResult>();

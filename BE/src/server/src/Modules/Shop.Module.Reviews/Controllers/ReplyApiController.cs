@@ -16,9 +16,7 @@ using Shop.Module.Reviews.ViewModels;
 
 namespace Shop.Module.Reviews.Controllers
 {
-    /// <summary>
-    /// 评论回复 API 控制器，用于处理评论的回复操作。
-    /// </summary>
+
     [Route("api/replies")]
     [Authorize()]
     public class ReplyApiController : ControllerBase
@@ -47,11 +45,7 @@ namespace Shop.Module.Reviews.Controllers
         }
 
 
-        /// <summary>
-        /// 发布一条评论回复。
-        /// </summary>
-        /// <param name="param">评论回复的参数。</param>
-        /// <returns>操作的结果。</returns>
+  
         [HttpPost()]
         public async Task<Result> Post([FromBody]ReplyAddParam param)
         {
@@ -71,7 +65,7 @@ namespace Shop.Module.Reviews.Controllers
                 var toReply = await _replyRepository.FirstOrDefaultAsync(param.ToReplyId.Value);
                 if (toReply == null)
                 {
-                    throw new Exception("回复信息不存在");
+                    throw new Exception("The reply information does not exist");
                 }
                 reply.ToUserId = toReply.UserId;
                 reply.ToUserName = toReply.ReplierName;
@@ -91,18 +85,14 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok();
         }
 
-        /// <summary>
-        /// 分页获取指定评论的所有通过审核的回复。
-        /// </summary>
-        /// <param name="param">分页和筛选参数。</param>
-        /// <returns>指定评论的回复列表。</returns>
+
         [HttpPost("grid")]
         [AllowAnonymous]
         public async Task<Result<StandardTableResult<ReplyListResult>>> Grid([FromBody]StandardTableParam<ReplyQueryParam> param)
         {
             var search = param?.Search;
             if (search == null)
-                throw new ArgumentNullException("参数异常");
+                throw new ArgumentNullException("Parameter exception");
 
             var query = _replyRepository.Query()
                .Where(c => c.Status == ReplyStatus.Approved && c.ParentId == null && c.ReviewId == search.ReviewId);

@@ -12,7 +12,7 @@ namespace Shop.Module.Reviews.ViewModels
 
         public string Title { get; set; }
 
-        [Required(ErrorMessage = "请输入评论，且长度不能超过400")]
+        [Required(ErrorMessage = "Please enter a review, and the length cannot exceed 400")]
         [StringLength(400)]
         public string Comment { get; set; }
 
@@ -20,14 +20,10 @@ namespace Shop.Module.Reviews.ViewModels
 
         public EntityTypeWithId EntityTypeId { get; set; } = EntityTypeWithId.Product;
 
-        /// <summary>
-        /// 评论来源Id 例如:订单Id
-        /// </summary>
+
         public int? SourceId { get; set; }
 
-        /// <summary>
-        /// 评论来源类型 Order = 0
-        /// </summary>
+  
         public ReviewSourceType? SourceType { get; set; }
 
         public bool IsAnonymous { get; set; }

@@ -35,21 +35,15 @@ namespace Shop.Module.Reviews.Services
         [StringLength(450)]
         public string ReplierName { get; set; }
 
-        /// <summary>
-        /// 当前用户回复的用户
-        /// </summary>
+      
         [ForeignKey("ToUser")]
         public int? ToUserId { get; set; }
 
-        /// <summary>
-        /// 当前用户回复的用户
-        /// </summary>
+     
         [ForeignKey("ToUserId")]
         public User ToUser { get; set; }
 
-        /// <summary>
-        /// 当前用户回复的用户
-        /// </summary>
+
         [StringLength(450)]
         public string ToUserName { get; set; }
 

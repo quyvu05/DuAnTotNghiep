@@ -9,9 +9,6 @@ namespace Shop.Module.Reviews.ViewModels
 
         public EntityTypeWithId EntityTypeId { get; set; }
 
-        /// <summary>
-        /// 有图
-        /// </summary>
         public bool? IsMedia { get; set; }
 
         public RatingLevel? RatingLevel { get; set; }

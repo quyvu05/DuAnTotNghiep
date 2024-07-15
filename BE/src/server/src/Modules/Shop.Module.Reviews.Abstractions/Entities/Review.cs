@@ -38,23 +38,17 @@ namespace Shop.Module.Reviews.Entities
 
         public int EntityId { get; set; }
 
-        /// <summary>
-        /// 评论来源Id 例如:订单Id
-        /// </summary>
+ 
         public int? SourceId { get; set; }
 
-        /// <summary>
-        /// 评论来源类型 Order = 0
-        /// </summary>
+
         public ReviewSourceType? SourceType { get; set; }
 
         public bool IsAnonymous { get; set; }
 
         public int SupportCount { get; set; }
 
-        /// <summary>
-        /// 是否由系统自动生成的评论
-        /// </summary>
+   
         public bool IsSystem { get; set; }
 
         public bool IsDeleted { get; set; }

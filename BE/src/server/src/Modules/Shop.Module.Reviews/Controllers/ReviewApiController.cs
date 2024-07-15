@@ -53,11 +53,7 @@ namespace Shop.Module.Reviews.Controllers
             _replyRepository = replyRepository;
         }
 
-        /// <summary>
-        /// 添加评论。
-        /// </summary>
-        /// <param name="param">评论添加的参数。</param>
-        /// <returns>添加评论操作的结果。</returns>
+
         [HttpPost]
         public async Task<Result> AddReview([FromBody] ReviewAddParam param)
         {
@@ -65,12 +61,12 @@ namespace Shop.Module.Reviews.Controllers
             var anyType = entityTypeIds.Any(c => c == param.EntityTypeId);
             if (!anyType)
             {
-                throw new Exception("参数异常");
+                throw new Exception("Parameter exception");
             }
 
             if (param.SourceType == null && param.SourceId != null)
             {
-                throw new Exception("评论来源类型异常");
+                throw new Exception("Review source type exception");
             }
             else if (param.SourceType != null && param.SourceId != null)
             {
@@ -79,23 +75,21 @@ namespace Shop.Module.Reviews.Controllers
                     var anyProduct = _orderRepository.Query().Any(c => c.Id == param.SourceId.Value && c.OrderItems.Any(x => x.ProductId == param.EntityId));
                     if (!anyProduct)
                     {
-                        throw new Exception("评论商品不存在");
+                        throw new Exception("The reviewed product does not exist");
                     }
                     var order = await _orderRepository.Query().FirstOrDefaultAsync(c => c.Id == param.SourceId);
                     if (order == null)
-                        throw new Exception("订单不存在");
+                        throw new Exception("The order does not exist");
                     if (order.OrderStatus != OrderStatus.Complete)
-                        throw new Exception("订单未完成，无法进行评价");
+                        throw new Exception("The order is not completed, so it cannot be reviewed");
                 }
             }
 
-            // 一个用户
-            // 评论 某订单 某商品只能一次
-            // 评论 无订单关联 评论商品只能一次
+
             var any = await _reviewRepository.Query()
                 .AnyAsync(c => c.UserId == user.Id && c.EntityTypeId == (int)param.EntityTypeId && c.EntityId == param.EntityId && c.SourceId == param.SourceId && c.SourceType == param.SourceType);
             if (any)
-                throw new Exception("您已评论");
+                throw new Exception("You have already reviewed");
 
             var review = new Review
             {
@@ -140,18 +134,14 @@ namespace Shop.Module.Reviews.Controllers
         }
 
 
-        /// <summary>
-        /// 获取特定实体的评论信息，如评论总数和各星级的评论数。
-        /// </summary>
-        /// <param name="param">评论信息查询的参数。</param>
-        /// <returns>特定实体的评论信息。</returns>
+ 
         [HttpPost("info")]
         [AllowAnonymous]
         public async Task<Result> Info([FromBody] ReviewInfoParam param)
         {
             var any = entityTypeIds.Any(c => c == param.EntityTypeId);
             if (!any)
-                throw new Exception("参数不支持");
+                throw new Exception("The parameter is not supported");
 
             var query = _reviewRepository.Query()
                 .Where(c => c.EntityId == param.EntityId && c.EntityTypeId == (int)param.EntityTypeId && c.Status == ReviewStatus.Approved);
@@ -175,18 +165,14 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 列出特定实体的评论列表。
-        /// </summary>
-        /// <param name="param">评论列表查询的参数。</param>
-        /// <returns>特定实体的评论列表。</returns>
+
         [HttpPost("list")]
         [AllowAnonymous]
         public async Task<Result> List([FromBody] ReviewListQueryParam param)
         {
             var any = entityTypeIds.Any(c => c == param.EntityTypeId);
             if (!any)
-                throw new Exception("参数不支持");
+                throw new Exception("The parameter is not supported");
 
             var query = _reviewRepository.Query()
                .Where(c => c.Status == ReviewStatus.Approved && c.EntityId == param.EntityId && c.EntityTypeId == (int)param.EntityTypeId);
@@ -241,22 +227,18 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 分页获取评论列表。
-        /// </summary>
-        /// <param name="param">分页查询参数。</param>
-        /// <returns>分页的评论列表。</returns>
+
         [HttpPost("grid")]
         [AllowAnonymous]
         public async Task<Result<StandardTableResult<ReviewListResult>>> Grid([FromBody] StandardTableParam<ReviewQueryParam> param)
         {
             var search = param?.Search;
             if (search == null)
-                throw new ArgumentNullException("参数异常");
+                throw new ArgumentNullException("Parameter exception");
 
             var any = entityTypeIds.Any(c => c == search.EntityTypeId);
             if (!any)
-                throw new Exception("参数不支持");
+                throw new Exception("The parameter is not supported");
 
             var query = _reviewRepository.Query()
                .Where(c => c.Status == ReviewStatus.Approved && c.EntityId == search.EntityId && c.EntityTypeId == (int)search.EntityTypeId);
@@ -312,7 +294,7 @@ namespace Shop.Module.Reviews.Controllers
 
             if (result?.List?.Count() > 0)
             {
-                // bug todo 待优化
+                // bug todo
                 result.List.ToList().ForEach(c =>
                 {
                     if (c.ReplieCount > 0)
@@ -334,11 +316,7 @@ namespace Shop.Module.Reviews.Controllers
             return Result.Ok(result);
         }
 
-        /// <summary>
-        /// 获取特定评论的详细信息。
-        /// </summary>
-        /// <param name="id">评论 ID。</param>
-        /// <returns>特定评论的详细信息。</returns>
+
         [HttpGet("{id:int:min(1)}")]
         [AllowAnonymous]
         public async Task<Result> Get(int id)
